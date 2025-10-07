@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Download, Eye, Calendar, User } from "lucide-react"
-import { TemplateItem } from "@/components/Home/components/MainContent/TemplateItem"
+import TemplateItem from "@/components/Home/components/MainContent/TemplateItem"
 import SiderDownload from "./components/SiderDownload"
 import { relatedTemplates, template } from "./data"
 

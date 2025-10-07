@@ -21,7 +21,7 @@ const categories = [
     { icon: FileText, label: "Mẫu Đơn Khác", href: "#", hasDropdown: true },
 ];
 
-export function CategoryNavigate() {
+export default function CategoryNavigate() {
     return (
         <nav className="bg-[#0d83c7] text-white shadow-sm">
             <div className="container mx-auto flex items-center justify-start gap-6 overflow-x-auto text-xl px-6 py-7 text-base font-medium">

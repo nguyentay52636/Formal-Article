@@ -14,7 +14,7 @@ interface TemplateItemProps {
     category: string
 }
 
-export function TemplateItem({ id, title, slug, thumbnail, views, downloads, category }: TemplateItemProps) {
+export default function TemplateItem({ id, title, slug, thumbnail, views, downloads, category }: TemplateItemProps) {
     return (
         <Card className="group overflow-hidden hover:shadow-lg transition-all duration-300">
             <Link href={`/mau-don/${slug}`}>
