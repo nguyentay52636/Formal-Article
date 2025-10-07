@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Search, Menu, FileText, LogOut, BookMarked, Settings, Shield } from "lucide-react"
+import { Search, FileText } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
@@ -24,8 +24,7 @@ export function Header() {
     return (
         <header className="sticky top-0 z-50 w-full bg-[#107bbd]! border-b border-border/80 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="container mx-auto px-">
-                <div className="flex h-20 items-center justify-between">
-                    {/* Logo */}
+                <div className="flex h-20 items-center justify-between ">
                     <Link href="/" className="flex items-center gap-2">
                         <FileText className="h-6 w-6 text-white" />
                         <span className="text-xl font-bold text-white">Mẫu Đơn</span>
