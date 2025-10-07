@@ -11,16 +11,12 @@ export default function HomePages() {
     return (
         <>
             <div className="min-h-screen flex flex-col">
-                <Header />
                 <Logo />
                 <CategoryNavigate />
                 <main className="flex-1">
                     <HeroSection />
                     <MainContent />
                 </main>
-                <Footer />
-
-
             </div>
             <BackToTop />
         </>

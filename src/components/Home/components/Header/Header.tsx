@@ -57,7 +57,7 @@ export function Header() {
                             <Search className="h-5 w-5" />
                         </Button>
 
-                        {user ? (
+                        {/* {user ? (
                             <ProfileHeader user={user} />
                         ) : (
                             <div className="hidden md:flex items-center gap-2">
@@ -68,7 +68,15 @@ export function Header() {
                                     <Link href="/dang-ky">Đăng ký</Link>
                                 </Button>
                             </div>
-                        )}
+                        )} */}
+                        <div className="hidden md:flex items-center gap-4 mx-4">
+                            <Button variant="outline" size="lg" asChild>
+                                <Link href="/dang-nhap" className="text-md! font-bold">Đăng nhập</Link>
+                            </Button>
+                            <Button variant="outline" size="lg" asChild>
+                                <Link href="/dang-ky" className="text-md! font-bold">Đăng ký</Link>
+                            </Button>
+                        </div>
 
                         <MobileMenu isOpen={isOpen} setIsOpen={setIsOpen} user={user} />
                     </div>
