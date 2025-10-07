@@ -31,14 +31,16 @@ export function Header() {
                     </Link>
 
                     {/* Desktop Navigation */}
-                    <nav className="hidden md:flex items-center gap-6">
+                    <nav className="hidden md:flex items-center gap-6 hover:text-gray-300! ">
                         {navItems.map((item) => (
                             <Link
                                 key={item.href}
                                 href={item.href}
-                                className="text-sm font-bold text-white! hover:text-foreground transition-colors"
+                                className="text-xl font-bold text-white!  transition-colors hover:text-gray-300! "
                             >
-                                {item.label}
+                                <span className=" font-bold text-white! hover:text-foreground transition-colors">
+                                    {item.label}
+                                </span>
                             </Link>
                         ))}
                     </nav>
