@@ -24,8 +24,9 @@ export default function MainContent() {
                             {templates.map((template: any) => (
                                 <   TemplateItem key={template.id} {...template} />
                             ))}
+                            <Pagination />
                         </div>
-                        <Pagination />
+
                     </div>
                     <aside className="hidden lg:block">
                         <PopularSidebar />
