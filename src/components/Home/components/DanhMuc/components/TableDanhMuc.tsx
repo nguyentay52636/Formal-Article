@@ -3,9 +3,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Edit, FolderTree, Trash2 } from 'lucide-react'
-import { PaginationProvider } from '@/context/PaginationProvider'
-import PaginationCategory from './PaginationCategory'
-
 export type CategoryItem = {
     id: number
     ten: string

@@ -9,6 +9,8 @@ import FilterPanel from "./components/FilterPanel"
 import AddUserDialog from "./components/Dialog/AddUserDialog"
 import EditUserDialog from "./components/Dialog/EditUserDialog"
 import DeleteUserDialog from "./components/Dialog/DeleteUserDialog"
+import { PaginationProvider } from "@/context/PaginationProvider"
+import PaginationNguoiDung from "./components/PaginationNguoiDung"
 
 const users: UserItem[] = [
     {
@@ -142,6 +144,11 @@ export default function NguoiDung() {
                 onEdit={handleEdit}
                 onDelete={handleDelete}
             />
+
+            <PaginationProvider total={users.length} initialPageSize={5}>
+                <PaginationNguoiDung users={filteredUsers} />
+            </PaginationProvider>
+
 
             <EditUserDialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen} user={selectedUser} />
 
