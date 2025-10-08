@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input"
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import ProfileHeader from "./components/ProfileHeader"
 import { navItems } from "./components/router"
 import MobileMenu from "./components/MobileMenu"
 
