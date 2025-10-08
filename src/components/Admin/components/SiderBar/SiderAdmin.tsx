@@ -7,6 +7,8 @@ import {
     LayoutDashboard,
     ChevronLeft,
     ChevronRight,
+    Icon,
+    Settings,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -30,7 +32,6 @@ export function SiderAdmin() {
         const newState = !isCollapsed
         setIsCollapsed(newState)
         localStorage.setItem("admin-sidebar-collapsed", String(newState))
-        // Dispatch custom event for layout to listen
         window.dispatchEvent(new CustomEvent("sidebar-toggle", { detail: { collapsed: newState } }))
     }
 
@@ -42,17 +43,42 @@ export function SiderAdmin() {
                     isCollapsed ? "w-20" : "w-64",
                 )}
             >
-                <div className="flex h-16 items-center justify-between border-b border-border px-4">
+                <div className="flex h-16 relative items-center justify-between border-b border-border px-4">
                     <Link href="/quantri" className={cn("flex items-center gap-3 transition-all", isCollapsed && "gap-0")}>
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-purple-600 text-primary-foreground shadow-lg">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#107bbd] text-white ">
                             <LayoutDashboard className="h-5 w-5" />
                         </div>
                         {!isCollapsed && (
-                            <span className="text-lg font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+                            <span className="text-lg font-bold text-[#107bbd]">
                                 Quản Trị
                             </span>
                         )}
                     </Link>
+                    <div className="absolute  right-0 px-2">
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={toggleCollapsed}
+                                    className={cn(
+                                        "group relative h-10 w-10 pr-2! rounded-full bg-[#107bbd] shadow-lg transition-all duration-300 hover:bg-[#107bbd]/80 cursor-pointer",
+                                        isCollapsed ? "mx-auto" : "ml-auto"
+                                    )}
+                                >
+                                    <div className=" inset-0 rounded-full bg-white/20 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                                    {isCollapsed ? (
+                                        <ChevronRight className="h-7! w-7! text-white transition-transform duration-300 group-hover:translate-x-0.5" />
+                                    ) : (
+                                        <ChevronLeft className="h-7! w-7!  text-white transition-transform duration-300 group-hover:-translate-x-0.5" />
+                                    )}
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent side="right" className="font-medium">
+                                {isCollapsed ? "Mở rộng" : "Thu gọn"}
+                            </TooltipContent>
+                        </Tooltip>
+                    </div>
                 </div>
 
                 <nav className="space-y-1 p-3">
@@ -66,8 +92,8 @@ export function SiderAdmin() {
                                 className={cn(
                                     "flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-all duration-200",
                                     isActive
-                                        ? "bg-gradient-to-r from-primary to-purple-600 text-primary-foreground shadow-md"
-                                        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground hover:shadow-sm",
+                                        ? "bg-[#107bbd] text-white shadow-md"
+                                        : "text-muted-foreground hover:bg-[#107bbd]/10 hover:text-[#107bbd] hover:shadow-sm",
                                     isCollapsed && "justify-center px-0",
                                 )}
                             >
@@ -90,28 +116,20 @@ export function SiderAdmin() {
                         return <div key={item.href}>{linkContent}</div>
                     })}
                 </nav>
-
-                <div className="absolute bottom-4 left-0 right-0 px-3">
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button
-                                variant="outline"
-                                size={isCollapsed ? "icon" : "default"}
-                                onClick={toggleCollapsed}
-                                className={cn("w-full transition-all duration-200 hover:bg-accent", isCollapsed && "h-10 w-10 mx-auto")}
-                            >
-                                {isCollapsed ? (
-                                    <ChevronRight className="h-5 w-5" />
-                                ) : (
-                                    <>
-                                        <ChevronLeft className="h-5 w-5 mr-2" />
-                                        <span>Thu gọn</span>
-                                    </>
-                                )}
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent side="right">{isCollapsed ? "Mở rộng" : "Thu gọn"}</TooltipContent>
-                    </Tooltip>
+                <div className="absolute bottom-0 w-full p-3 border-t border-border">
+                    <Link
+                        href={"/quantri/cai-dat"}
+                        className={cn(
+                            "flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-all duration-200",
+                            pathname === "/quantri/cai-dat" || pathname?.startsWith("/quantri/cai-dat/")
+                                ? "bg-[#107bbd] text-white shadow-md"
+                                : "text-muted-foreground hover:bg-[#107bbd]/10 hover:text-[#107bbd] hover:shadow-sm",
+                            isCollapsed && "justify-center px-0",
+                        )}
+                    >
+                        <Settings className={cn("h-5 w-5 shrink-0", (pathname === "/quantri/cai-dat" || pathname?.startsWith("/quantri/cai-dat/")) && "drop-shadow-sm")} />
+                        {!isCollapsed && <span className="truncate">Cài đặt</span>}
+                    </Link>
                 </div>
             </aside>
         </TooltipProvider>

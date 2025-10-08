@@ -1,11 +1,13 @@
 "use client"
 
 import React from "react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { SiderAdmin } from "@/components/Admin/components/SiderBar/SiderAdmin"
+import { ThemeProvider } from "@/components/ThemeProvider"
 import { cn } from "@/lib/utils"
+import "../globals.css"
 
-export default function layout({
+export default function AdminLayout({
     children,
 }: {
     children: React.ReactNode
@@ -30,12 +32,23 @@ export default function layout({
     }, [])
 
     return (
-        <div className="min-h-screen bg-background">
-            <SiderAdmin />
-            {/* <AdminHeader /> */}
-            <main className={cn("mt-16 p-6 transition-all duration-300 ease-in-out", isCollapsed ? "ml-20" : "ml-64")}>
-                {children}
-            </main>
-        </div>
+        <html lang="en">
+            <body>
+                <ThemeProvider
+                    attribute="class"
+                    defaultTheme="light"
+                    enableSystem
+                >
+                    <Suspense fallback={null}>
+                        <div className="min-h-screen bg-background">
+                            <SiderAdmin />
+                            <main className={cn("mt-16 p-6 transition-all duration-300 ease-in-out", isCollapsed ? "ml-20" : "ml-64")}>
+                                {children}
+                            </main>
+                        </div>
+                    </Suspense>
+                </ThemeProvider>
+            </body>
+        </html>
     )
 }
