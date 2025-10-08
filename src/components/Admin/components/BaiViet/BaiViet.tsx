@@ -9,6 +9,7 @@ import EditPostDialog from "./components/Dialog/EditPostDialog"
 import DeletePostDialog from "./components/Dialog/DeletePostDialog"
 import { PaginationProvider } from "@/context/PaginationProvider"
 import PaginatedArticles from "./components/PaginatedArticles"
+import ListCard from "./components/Cards/ListCard"
 
 const articles: Article[] = [
     {
@@ -69,14 +70,15 @@ export default function BaiViet() {
     }
 
     return (
-        <div className="space-y-6">
-            <div className="flex items-center justify-between">
+        <div className="space-y-4">
+            <div className="flex items-center justify-between my-4">
                 <div>
-                    <h1 className="text-3xl font-bold">Quản lý bài viết</h1>
+                    <h1 className="text-4xl font-bold">Quản lý bài viết</h1>
                     <p className="text-muted-foreground">Quản lý tất cả bài viết trong hệ thống</p>
                 </div>
                 <AddPostNew />
             </div>
+            <ListCard />
 
             <SearchBar value={searchQuery} onChange={setSearchQuery} />
 

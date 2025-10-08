@@ -40,7 +40,7 @@ export function SiderAdmin() {
         <TooltipProvider delayDuration={0}>
             <aside
                 className={cn(
-                    "fixed left-0 top-0 z-40 h-screen border-r border-border bg-card transition-all duration-300 ease-in-out",
+                    "fixed left-0 top-0 z-40 h-screen border-r border-border bg-card transition-all ",
                     isCollapsed ? "w-20" : "w-64",
                 )}
             >
@@ -117,7 +117,7 @@ export function SiderAdmin() {
                         return <div key={item.href}>{linkContent}</div>
                     })}
                 </nav>
-                <SwitchMode  />
+                <SwitchMode />
                 <div className="absolute bottom-0 w-full p-3 border-t border-border">
 
                     <Link

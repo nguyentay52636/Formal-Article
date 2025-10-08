@@ -6,7 +6,6 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { Header } from "@/components/Home";
 import { Footer } from "@/components/Home/components/Footer/Footer";
 import { usePathname } from "next/navigation";
-import { SiderAdmin } from "@/components/Admin/components/SiderBar/SiderAdmin";
 
 
 export default function RootLayout({
@@ -26,7 +25,7 @@ export default function RootLayout({
           enableSystem
         >
           <Suspense fallback={null}>
-            {isAdminPage ? <SiderAdmin /> : <Header />}
+            {!isAdminPage && <Header />}
             {children}
             {!isAdminPage && <Footer />}
           </Suspense>
