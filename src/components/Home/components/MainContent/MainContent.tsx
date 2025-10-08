@@ -1,7 +1,7 @@
 import React from 'react'
 import { Button } from '@/components/ui/button'
 import { ChevronRight } from 'lucide-react'
-import { TemplateItem } from './TemplateItem'
+import TemplateItem from './TemplateItem'
 import { templates } from '@/mock/data'
 import { PopularSidebar } from './PopularSidebar'
 import { Pagination } from '@/components/ui/pagination'
@@ -22,17 +22,14 @@ export default function MainContent() {
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
                             {templates.map((template: any) => (
-                                <   TemplateItem key={template.id} {...template} />
+                                <TemplateItem key={template.id} {...template} />
                             ))}
                             <Pagination />
                         </div>
-
                     </div>
-                    <aside className="hidden lg:block">
-                        <PopularSidebar />
-                    </aside>
+                    <PopularSidebar />
                 </div>
             </div>
-        </section>
+        </section >
     )
 }

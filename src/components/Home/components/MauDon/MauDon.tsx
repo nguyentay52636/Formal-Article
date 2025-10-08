@@ -1,5 +1,4 @@
 
-import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
@@ -16,6 +15,7 @@ export default function MauDon() {
             <main className="flex-1 py-8">
                 <div className="container mx-auto px-4">
                     <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-8">
+
                         <div className="space-y-6">
                             <div className="space-y-4">
                                 <Badge variant="secondary">{template.category}</Badge>
@@ -80,15 +80,19 @@ export default function MauDon() {
                             <div className="space-y-4">
                                 <h2 className="text-2xl font-bold">Mẫu đơn liên quan</h2>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                                    {relatedTemplates.map((template: any) => (
+                                    {relatedTemplates.map((template) => (
                                         <TemplateItem key={template.id} {...template} />
                                     ))}
                                 </div>
-                            </div>
-                        </div>
 
+
+                            </div>
+
+                        </div>
                         <SiderDownload />
+
                     </div>
+
                 </div>
             </main>
 
