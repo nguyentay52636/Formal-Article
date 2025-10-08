@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { menuItems } from "./router"
+import { SwitchMode } from "@/components/SwitchMode"
 
 
 
@@ -116,7 +117,9 @@ export function SiderAdmin() {
                         return <div key={item.href}>{linkContent}</div>
                     })}
                 </nav>
+                <SwitchMode  />
                 <div className="absolute bottom-0 w-full p-3 border-t border-border">
+
                     <Link
                         href={"/quantri/cai-dat"}
                         className={cn(
