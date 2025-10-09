@@ -11,7 +11,8 @@ import TagsActions from "./components/TagsActions"
 import DialogAddTags from "./components/Dialog/DialogAddTags"
 import DialogEditTags from "./components/Dialog/DialogEditTags"
 import DialogDeleteTags from "./components/Dialog/DialogDeleteTags"
-
+import PaginationTags from "./components/PaginationTags"
+import { PaginationProvider } from "@/context/PaginationProvider"
 // Hooks
 import { useTagsManagement } from "./hooks/useTagsManagement"
 
@@ -56,6 +57,9 @@ export default function Tags() {
                 onEdit={handleEdit}
                 onDelete={handleDelete}
             />
+            <PaginationProvider total={filteredTags.length}>
+                <PaginationTags />
+            </PaginationProvider>
 
             {/* Dialogs */}
             <DialogAddTags

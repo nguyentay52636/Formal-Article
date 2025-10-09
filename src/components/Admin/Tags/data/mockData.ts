@@ -7,6 +7,10 @@ export const mockTags: Tag[] = [
   { id: 4, ten: "Tiếng Anh", duongDan: "tieng-anh", soBaiViet: 15 },
   { id: 5, ten: "Thực tập", duongDan: "thuc-tap", soBaiViet: 12 },
   { id: 6, ten: "Nghỉ phép", duongDan: "nghi-phep", soBaiViet: 28 },
+  { id: 6, ten: "Nghỉ phép", duongDan: "nghi-phep", soBaiViet: 28 },
+  { id: 6, ten: "Nghỉ phép", duongDan: "nghi-phep", soBaiViet: 28 },
+  { id: 6, ten: "Nghỉ phép", duongDan: "nghi-phep", soBaiViet: 28 },
+  { id: 6, ten: "Nghỉ phép", duongDan: "nghi-phep", soBaiViet: 28 },
 ]
 
 export const tagsStats = {
