@@ -4,7 +4,7 @@ import { ChevronRight } from 'lucide-react'
 import TemplateItem from './TemplateItem'
 import { templates } from '@/mock/data'
 import { PopularSidebar } from './PopularSidebar'
-import { Pagination } from '@/components/ui/pagination'
+import { ArticleComments } from '@/components/Comments'
 
 export default function MainContent() {
     return (
@@ -24,7 +24,12 @@ export default function MainContent() {
                             {templates.map((template: any) => (
                                 <TemplateItem key={template.id} {...template} />
                             ))}
-                            <Pagination />
+                        </div>
+                        <div className="mt-12">
+                            <ArticleComments
+                                articleId={1}
+                                articleSlug="sample-slug"
+                            />
                         </div>
                     </div>
                     <PopularSidebar />

@@ -12,6 +12,8 @@ import ApproveCommentDialog from "./components/Dialog/ApproveCommentDialog"
 import RejectCommentDialog from "./components/Dialog/RejectCommentDialog"
 import DeleteCommentDialog from "./components/Dialog/DeleteCommentDialog"
 import { comments, CommentItem } from "./data"
+import { PaginationProvider } from "@/context/PaginationProvider"
+import PaginationBinhLuan from "./components/PaginationBinhLuan"
 
 export default function BinhLuan() {
     const [searchQuery, setSearchQuery] = useState("")
@@ -104,6 +106,9 @@ export default function BinhLuan() {
                 onReject={handleReject}
                 onDelete={handleDelete}
             />
+            <PaginationProvider total={filteredComments.length} initialPageSize={5}>
+                <PaginationBinhLuan comments={filteredComments} />
+            </PaginationProvider>
 
             <ViewCommentDialog
                 open={isViewDialogOpen}

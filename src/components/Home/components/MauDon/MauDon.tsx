@@ -1,4 +1,6 @@
 
+"use client"
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
@@ -6,6 +8,7 @@ import { Download, Eye, Calendar, User } from "lucide-react"
 import TemplateItem from "@/components/Home/components/MainContent/TemplateItem"
 import SiderDownload from "./components/SiderDownload"
 import { relatedTemplates, template } from "./data"
+import { ArticleComments } from "@/components/Comments"
 
 
 export default function MauDon() {
@@ -76,6 +79,12 @@ export default function MauDon() {
                                     />
                                 </CardContent>
                             </Card>
+
+                            {/* Comments Section */}
+                            <ArticleComments
+                                articleId={template.id}
+                                articleSlug="don-xin-viec-it"
+                            />
 
                             <div className="space-y-4">
                                 <h2 className="text-2xl font-bold">Mẫu đơn liên quan</h2>
