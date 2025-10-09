@@ -8,6 +8,8 @@ import AddCategoryDialog from "./components/Dialog/AddCategoryDialog"
 import EditCategoryDialog from "./components/Dialog/EditCategoryDialog"
 import DeleteCategoryDialog from "./components/Dialog/DeleteCategoryDialog"
 import { categories } from "./data"
+import { PaginationProvider } from "@/context/PaginationProvider"
+import PaginationCategory from "./components/PaginationCategory"
 
 
 
@@ -55,6 +57,9 @@ export default function DanhMuc() {
                 onEdit={handleEdit}
                 onDelete={handleDelete}
             />
+            <PaginationProvider total={filteredCategories.length}>
+                <PaginationCategory categories={filteredCategories} />
+            </PaginationProvider>
 
             <EditCategoryDialog
                 open={isEditDialogOpen}

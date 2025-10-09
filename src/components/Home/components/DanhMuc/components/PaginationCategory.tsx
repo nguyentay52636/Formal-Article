@@ -5,17 +5,14 @@ import TableDanhMuc, { CategoryItem } from './TableDanhMuc'
 
 interface PaginatedCategoriesProps {
     categories: CategoryItem[]
-    onEdit: (category: CategoryItem) => void
-    onDelete: (category: CategoryItem) => void
 }
 
-export default function PaginationCategory({ categories, onEdit, onDelete }: PaginatedCategoriesProps) {
+export default function PaginationCategory({ categories }: PaginatedCategoriesProps) {
     const { page, setPage, pageCount } = usePagination()
     const pageItems = usePaginateArray(categories)
 
     return (
         <div className="space-y-4">
-            <TableDanhMuc categories={pageItems} onEdit={onEdit} onDelete={onDelete} />
 
             <Pagination>
                 <PaginationContent>
