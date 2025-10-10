@@ -1,4 +1,4 @@
-import { Activity } from "./ActivityRow"
+import { Activity } from "./components/ActivityRow"
 
 export const activities: Activity[] = [
     {
