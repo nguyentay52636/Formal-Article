@@ -25,12 +25,12 @@ export default function MainContent() {
                                 <TemplateItem key={template.id} {...template} />
                             ))}
                         </div>
-                        <div className="mt-12">
+                        {/* <div className="mt-12">
                             <ArticleComments
                                 articleId={1}
                                 articleSlug="sample-slug"
                             />
-                        </div>
+                        </div> */}
                     </div>
                     <PopularSidebar />
                 </div>
