@@ -13,7 +13,7 @@ async function openrouterApi(req: Request) {
       return NextResponse.json({ error: "Prompt không hợp lệ" }, { status: 400 });
     }
 
-    const safeReferer = (process.env.SITE_URL || process.env.SITE_URL_1 || "").replace(/[^\x00-\x7F]/g, "");
+    const safeReferer = (process.env.SITE_URL || "").replace(/[^\x00-\x7F]/g, "");
     const safeTitle = (process.env.SITE_NAME || "Formal Frontend").replace(/[^\x00-\x7F]/g, "");
 
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
