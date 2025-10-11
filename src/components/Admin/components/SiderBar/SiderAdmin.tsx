@@ -9,6 +9,7 @@ import {
     ChevronRight,
     Icon,
     Settings,
+    Home,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -83,6 +84,17 @@ export function SiderAdmin() {
                 </div>
 
                 <nav className="space-y-1 p-3">
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Link href="/" className="flex  transition-all duration-200 items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-all duration-200">
+                                <Home className="h-5 w-5 shrink-0" />
+                                {!isCollapsed && <span className="truncate">Quay về trang chủ</span>}
+                            </Link>
+                        </TooltipTrigger>
+                        <TooltipContent side="right" className="font-medium">
+                            Quay về trang chủ
+                        </TooltipContent>
+                    </Tooltip>
                     {menuItems.map((item) => {
                         const Icon = item.icon
                         const isActive = pathname === item.href || pathname?.startsWith(item.href + "/")
@@ -135,6 +147,6 @@ export function SiderAdmin() {
                     </Link>
                 </div>
             </aside>
-        </TooltipProvider>
+        </TooltipProvider >
     )
 }
