@@ -14,7 +14,7 @@ async function openrouterApi(req: Request) {
     }
 
     const safeReferer = (process.env.SITE_URL || "").replace(/[^\x00-\x7F]/g, "");
-    const safeTitle = (process.env.SITE_NAME || "Formal Frontend").replace(/[^\x00-\x7F]/g, "");
+    const safeTitle = (process.env.SITE_NAME || "CV & Job Application Assistant").replace(/[^\x00-\x7F]/g, "");
 
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
@@ -30,14 +30,16 @@ async function openrouterApi(req: Request) {
           {
             role: "system",
             content:
-              "Bạn là trợ lý viết đơn mẫu tiếng Việt. Trả về NỘI DUNG THUẦN VĂN BẢN (plain text), KHÔNG dùng HTML hoặc Markdown.",
+              "Bạn là trợ lý tiếng Việt chuyên về hồ sơ xin việc: CV, resume, cover letter, thư xin việc, thư ứng tuyển, email ứng tuyển, mô tả kinh nghiệm/kỹ năng, và chuẩn bị phỏng vấn. Trả lời NGẮN GỌN, RÕ RÀNG, CHỈ THUẦN VĂN BẢN (plain text), KHÔNG dùng HTML/Markdown. Nếu câu hỏi không liên quan tới xin việc/CV/phỏng vấn, hãy lịch sự từ chối và đề nghị người dùng đặt câu hỏi liên quan.",
           },
           {
             role: "user",
-            content: prompt || "Viết một đơn xin nghỉ phép lịch sự, đầy đủ các phần cần thiết.",
+            content:
+              prompt ||
+              "Hãy giúp tôi viết một CV ngắn gọn cho vị trí Nhân viên Kế toán (1 năm kinh nghiệm), tập trung vào kỹ năng và thành tích.",
           },
         ],
-        temperature: 0.7,
+        temperature: 0.6,
       }),
     });
 

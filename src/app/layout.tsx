@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { Header } from "@/components/Home";
 import { Footer } from "@/components/Home/components/Footer/Footer";
 import { usePathname } from "next/navigation";
+import Chat from "@/components/Home/components/Chat/Chat";
 
 
 export default function RootLayout({
@@ -27,6 +28,7 @@ export default function RootLayout({
           <Suspense fallback={null}>
             {!isAdminPage && <Header />}
             {children}
+            <Chat />
             {!isAdminPage && <Footer />}
           </Suspense>
         </ThemeProvider>

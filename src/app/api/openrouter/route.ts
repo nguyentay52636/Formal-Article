@@ -28,22 +28,63 @@ async function openrouterApi(req: Request) {
     }
 
     const safeReferer = (process.env.SITE_URL || "").replace(/[^\x00-\x7F]/g, "");
-    const safeTitle = (process.env.SITE_NAME || "Sài Gòn Culinary Hub").replace(
+    const safeTitle = (process.env.SITE_NAME || "CV & Job Application Assistant").replace(
       /[^\x00-\x7F]/g,
       ""
     );
+
+    // Topic scoping: allow only CV/job application/interview related queries
+    function isAllowedTopic(text: string): boolean {
+      if (!text || typeof text !== "string") return false;
+      const lowered = text.toLowerCase();
+      const keywords = [
+        // Vietnamese
+        "cv", "sơ yếu lý lịch", "resume", "hồ sơ xin việc", "đơn xin việc", "cover letter",
+        "thư xin việc", "thư ứng tuyển", "viết cv", "mẫu cv", "mẫu đơn xin việc",
+        "phỏng vấn", "câu hỏi phỏng vấn", "kinh nghiệm làm việc", "mục tiêu nghề nghiệp",
+        "kỹ năng", "kinh nghiệm", "tuyển dụng", "xin việc", "ứng tuyển", "jd", "mô tả công việc",
+        // English fallbacks
+        "job", "interview", "cv ", "resume", "cover letter", "apply",
+      ];
+      return keywords.some(k => lowered.includes(k));
+    }
+
+    function buildLocalChoicesResponse(message: string) {
+      return {
+        id: "local",
+        object: "chat.completion",
+        created: Math.floor(Date.now() / 1000),
+        model: process.env.OPENROUTER_MODEL || "deepseek/deepseek-chat",
+        choices: [
+          {
+            index: 0,
+            message: { role: "assistant", content: message },
+            finish_reason: "stop",
+          },
+        ],
+      };
+    }
+
+    // If prompt and history are not about allowed topics, short-circuit with guidance
+    const historyTexts = Array.isArray(conversationHistory)
+      ? conversationHistory.map((m: any) => (typeof m?.content === "string" ? m.content : "")).join(" \n ")
+      : "";
+
+    const inScope = isAllowedTopic(prompt || "") || isAllowedTopic(historyTexts);
+    if (!inScope) {
+      const guidance =
+        "Mình chỉ hỗ trợ các chủ đề liên quan đến hồ sơ xin việc: CV/Resume, đơn/cover letter, email ứng tuyển, mô tả kinh nghiệm/kỹ năng và chuẩn bị phỏng vấn. Vui lòng đặt câu hỏi liên quan để mình hỗ trợ tốt nhất.";
+      return NextResponse.json(buildLocalChoicesResponse(guidance));
+    }
 
     const messages = [
       {
         role: "system",
         content:
-          "Bạn là trợ lý ảo thân thiện và chuyên nghiệp của Sài Gòn Culinary Hub - một nền tảng kết nối người yêu ẩm thực Sài Gòn. Nhiệm vụ của bạn là:\n" +
-          "- Trả lời các câu hỏi về nhà hàng, món ăn, sự kiện ẩm thực\n" +
-          "- Hướng dẫn người dùng về giờ mở cửa, đặt bàn, đặt món\n" +
-          "- Giới thiệu các món ăn đặc sản Sài Gòn như Phở, Bánh Mì, Cơm Tấm, Bún Bò Huế\n" +
-          "- Hỗ trợ về livestream nấu ăn và các sự kiện ẩm thực\n" +
-          "- Trả lời bằng tiếng Việt một cách tự nhiên, thân thiện và ngắn gọn\n" +
-          "- KHÔNG dùng HTML hoặc Markdown, chỉ trả về plain text",
+          "Bạn là trợ lý tiếng Việt chuyên về hồ sơ xin việc (CV/Resume), đơn/cover letter, email ứng tuyển, mô tả kinh nghiệm/kỹ năng và chuẩn bị phỏng vấn.\n" +
+          "- Trả lời NGẮN GỌN, RÕ RÀNG, CHỈ THUẦN VĂN BẢN (plain text), KHÔNG dùng HTML/Markdown.\n" +
+          "- Khi cần, hãy hỏi lại để làm rõ thông tin (vị trí, kinh nghiệm, kỹ năng nổi bật).\n" +
+          "- Nếu câu hỏi ngoài phạm vi xin việc/CV/phỏng vấn, hãy lịch sự từ chối và mời đặt câu hỏi liên quan.",
       },
     ];
 
