@@ -1,14 +1,14 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { ChatButton, ChatWindow, type Message } from "./components/index"
+import { ChatButton, ChatWindow, type Message } from "./components"
 
 export default function Chat() {
     const [isOpen, setIsOpen] = useState(false)
     const [messages, setMessages] = useState<Message[]>([
         {
             id: "1",
-            text: "Xin chào! Tôi là trợ lý ảo của Formal. Tôi có thể giúp gì cho bạn? 🍜",
+            text: "Xin chào! Tôi là trợ lý ảo của Sài Gòn Culinary Hub. Tôi có thể giúp gì cho bạn? 🍜",
             sender: "bot",
             timestamp: new Date(),
         },
@@ -53,12 +53,12 @@ export default function Chat() {
         }))
 
         try {
-            console.log("[Chat] Sending request to /api/generate:", {
+            console.log("[Chat] Sending request to /api/openrouter:", {
                 prompt: userInput,
                 messagesCount: recentMessages.length
             })
 
-            const response = await fetch("/api/generate", {
+            const response = await fetch("/api/openrouter", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

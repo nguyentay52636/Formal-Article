@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 async function openrouterApi(req: Request) {
   try {
-    const { prompt, messages } = await req.json();
+    const { prompt } = await req.json();
 
     const apiKey = process.env.OPENROUTER_API_KEY;
     if (!apiKey) {
@@ -26,28 +26,17 @@ async function openrouterApi(req: Request) {
       },
       body: JSON.stringify({
         model: process.env.OPENROUTER_MODEL || "deepseek/deepseek-chat-v3.1:free",
-        messages: (
-          [
-            {
-              role: "system",
-              content:
-                "Bạn là trợ lý viết đơn mẫu tiếng Việt. Trả về NỘI DUNG THUẦN VĂN BẢN (plain text), KHÔNG dùng HTML hoặc Markdown.",
-            },
-            // Gắn hội thoại gần đây nếu client gửi lên
-            ...(
-              Array.isArray(messages)
-                ? messages
-                    .filter((m) => m && (m.role === "user" || m.role === "assistant") && typeof m.content === "string")
-                    .slice(-10)
-                : []
-            ),
-            // Luôn thêm lượt hỏi hiện tại
-            {
-              role: "user",
-              content: prompt || "Viết một đơn xin nghỉ phép lịch sự, đầy đủ các phần cần thiết.",
-            },
-          ]
-        ),
+        messages: [
+          {
+            role: "system",
+            content:
+              "Bạn là trợ lý viết đơn mẫu tiếng Việt. Trả về NỘI DUNG THUẦN VĂN BẢN (plain text), KHÔNG dùng HTML hoặc Markdown.",
+          },
+          {
+            role: "user",
+            content: prompt || "Viết một đơn xin nghỉ phép lịch sự, đầy đủ các phần cần thiết.",
+          },
+        ],
         temperature: 0.7,
       }),
     });
