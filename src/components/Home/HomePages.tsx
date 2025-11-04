@@ -17,6 +17,7 @@ export default function HomePages() {
                 </main>
             </div>
             <BackToTop />
+
         </>
     )
 }
