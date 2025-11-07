@@ -23,11 +23,21 @@ export function Header() {
     return (
         <header className="sticky top-0 z-50 w-full bg-[#107bbd]! border-b border-border/80 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="container mx-auto px-">
-                <div className="flex h-20 items-center justify-between ">
-                    <Link href="/" className="flex items-center gap-2">
-                        <FileText className="h-6 w-6 text-white" />
-                        <span className="text-xl font-bold text-white">Mẫu Đơn</span>
-                    </Link>
+                <div className="flex h-25 items-center justify-between ">
+                    <div className="flex items-center gap-3 text-white! ">
+                        <div className="flex items-center justify-center rounded-full">
+                            <FileText className="h-10 w-10 text-white" />
+                        </div>
+
+                        <div className="flex flex-col">
+                            <h1 className="text-4xl font-extrabold tracking-tight">
+                                <span className="text-[#ffffff] mx-1">Mẫu</span>
+                                <span className="text-[#ff5a3c]">CV</span>
+                                <span className="text-gray-800">.vn</span>
+                            </h1>
+
+                        </div>
+                    </div>
 
                     {/* Desktop Navigation */}
                     <nav className="hidden md:flex items-center gap-6 hover:text-gray-300! ">

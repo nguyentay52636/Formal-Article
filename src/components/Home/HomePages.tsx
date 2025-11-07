@@ -9,7 +9,7 @@ export default function HomePages() {
     return (
         <>
             <div className="min-h-screen flex flex-col">
-                <Logo />
+
                 <main className="flex-1">
                     <HeroSection />
                     <DonXinViec

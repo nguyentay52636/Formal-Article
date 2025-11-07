@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FileText } from "lucide-react";
+import { FileText, Search } from "lucide-react";
 
 export function Footer() {
     const footerLinks = {
@@ -25,15 +25,22 @@ export function Footer() {
             <div className="container mx-auto px-4 py-12">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                     {/* Logo & mô tả */}
-                    <div className="space-y-4">
-                        <Link href="/" className="flex items-center gap-2">
-                            <FileText className="h-6 w-6 text-primary" />
-                            <span className="text-2xl font-bold text-primary">Mẫu Đơn</span>
-                        </Link>
-                        <p className="text-base text-muted-foreground leading-relaxed">
-                            Thư viện mẫu đơn xin việc, đơn xin nghỉ và các loại đơn khác.
-                            Miễn phí, dễ sử dụng và cập nhật thường xuyên.
-                        </p>
+                    <div className="flex items-center gap-3">
+                        <div className="flex items-center justify-center p-4 bg-[#107bbd]! rounded-full">
+                            <FileText className="h-8 w-8 text-white" />
+                        </div>
+
+                        <div className="flex flex-col">
+                            <h1 className="text-4xl font-extrabold tracking-tight">
+                                <span className="text-[#0077ff]">Mẫu</span>
+                                <span className="text-[#ff5a3c]">CV</span>
+                                <span className="text-gray-800">.vn</span>
+                            </h1>
+                            <p className="text-sm text-gray-500 flex items-center gap-1">
+                                <Search className="w-4 h-4 text-gray-400" />
+                                Nền tảng tìm & tạo CV chuyên nghiệp hàng đầu Việt Nam
+                            </p>
+                        </div>
                     </div>
 
                     {/* Cột liên kết */}
