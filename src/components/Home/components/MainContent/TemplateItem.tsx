@@ -3,6 +3,8 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Eye, Download } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { DocxPreview } from "@/components/DocxPreview"
+import { mockDocxHtmlBySlug } from "@/mock/docx-html"
 
 interface TemplateItemProps {
     id: number
@@ -19,10 +21,12 @@ export default function TemplateItem({ id, title, slug, thumbnail, views, downlo
         <Card className="group overflow-hidden hover:shadow-lg transition-all duration-300">
             <Link href={`/mau-don/${slug}`}>
                 <div className="aspect-[3/4] overflow-hidden bg-muted">
-                    <img
-                        src={thumbnail || "/placeholder.svg"}
-                        alt={title}
-                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    <DocxPreview
+                        docxPath={`/docs/mau-don/${slug}.docx`}
+                        className="h-full w-full p-2 bg-muted"
+                        skeletonClassName="h-full w-full animate-pulse bg-muted"
+                        fallbackHtml={mockDocxHtmlBySlug[slug]}
+                        fitToContainer={true}
                     />
                 </div>
             </Link>
