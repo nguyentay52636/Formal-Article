@@ -1,7 +1,6 @@
 export { default as HomePages } from './HomePages'
 export { Header } from './components/Header/Header'
 export { default as SectionHero } from './components/SectionHero'
-export { default as CategoryNavigate } from './components/Categories/CategoryNavigate'
 export { default as TitleTemplate } from './components/MainContent/TitleTemplate'
 export { default as TemplateItem } from './components/MainContent/TemplateItem'
 export { default as ListTemplate } from './components/MainContent/ListTemplate'

@@ -1,7 +1,20 @@
-import React from 'react'
+import { CvEditor } from "@/components/Home/components/CvEditor/CvEditor"
 
-export default function page() {
+
+interface CVEditorPageProps {
+    params: {
+        id: string
+    }
+}
+
+export default async function page({ params }: CVEditorPageProps) {
+    const { id } = await params
+
     return (
-        <div>page</div>
+        <>
+            <div className="h-screen">
+                <CvEditor cvId={id} />
+            </div>
+        </>
     )
 }
