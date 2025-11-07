@@ -13,7 +13,7 @@ export default function JobApplicationItem({ jobApplication }: JobApplicationIte
     const { id, title, image, views, downloads, category, color } = jobApplication;
     return (
         <>
-            <Link key={jobApplication.id} href={`/cv/${jobApplication.id}`}>
+            <Link key={jobApplication.id} href={`/don-xin-viec/${jobApplication.id}`}>
                 <Card className="group hover:shadow-lg transition-shadow overflow-hidden h-full">
                     <CardContent className="p-0">
                         <div className={`relative aspect-[3/4] ${color} overflow-hidden`}>

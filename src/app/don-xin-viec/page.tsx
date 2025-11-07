@@ -1,3 +1,4 @@
+"use client"
 import DonXinViec from '@/components/Home/components/JobApplication/JobApplication'
 import React from 'react'
 
