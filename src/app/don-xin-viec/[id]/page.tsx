@@ -14,7 +14,7 @@ const cvTemplates = [
         downloads: 2341,
         rating: 4.8,
         image: "/list-item/professional-cv-template-with-blue-header.jpg",
-        previewImage: "list-item/professional-cv-template-with-blue-header.jpg",
+        previewImage: "/list-item/professional-cv-template-with-blue-header.jpg",
         description:
             "Ví trí chuyên viên logistics hiện đang là 1 trong những ví trí hấp dẫn với người tìm việc làm bởi tính linh hoạt, cơ hội phát triển bản thân cũng như hội nhập với lĩnh vực thương mại điện từ đang bùng nổ những năm gần đây.",
         language: "Tiếng Việt",

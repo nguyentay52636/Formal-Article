@@ -7,9 +7,12 @@ import { CvFeaturesCard } from "./components/CvFeaturesCard"
 import { CvPreviewCard } from "./components/CvPreviewCard"
 import { CvTitleSection } from "./components/CvTitleSection"
 import { CvUsageGuideCard } from "./components/CvUsageGuideCard"
+import { ReviewAI } from "./components/Reviews/ReviewAI"
 import { ShareCvCard } from "./components/ShareCvCard"
 import { StatsBar } from "./components/StatsBar"
 import type { CvDetail } from "./types"
+import { CVRating } from "@/components/ui/RatingCv"
+import { CvComment } from "./components/Comment/CvComment"
 
 interface CvDetailViewProps {
     cv: CvDetail
@@ -31,6 +34,9 @@ export function CvDetailView({ cv }: CvDetailViewProps) {
                         industry={cv.industry}
                     />
                     <CvUsageGuideCard />
+                    <CVRating cvId={cv.id} />
+                    <ReviewAI cvId={cv.id} cvTitle={cv.title} cvCategory={cv.category} />
+                    <CvComment cvId={cv.id} />
                 </div>
 
                 <div className="space-y-6">

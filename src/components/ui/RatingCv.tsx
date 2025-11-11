@@ -1,0 +1,118 @@
+"use client"
+
+import { Card } from "@/components/ui/card"
+import { Star } from "lucide-react"
+import { useState, useEffect } from "react"
+
+interface CVRatingProps {
+    cvId: string
+}
+
+interface RatingData {
+    average: number
+    total: number
+    distribution: { [key: number]: number }
+    userRating: number | null
+}
+
+export function CVRating({ cvId }: CVRatingProps) {
+    const [rating, setRating] = useState<RatingData>({
+        average: 4.8,
+        total: 124,
+        distribution: { 5: 89, 4: 28, 3: 5, 2: 1, 1: 1 },
+        userRating: null,
+    })
+    const [hoveredStar, setHoveredStar] = useState<number | null>(null)
+
+    useEffect(() => {
+        const savedRating = localStorage.getItem(`cv_rating_${cvId}`)
+        if (savedRating) {
+            setRating((prev) => ({ ...prev, userRating: Number(savedRating) }))
+        }
+    }, [cvId])
+
+    const handleRate = (stars: number) => {
+        const newTotal = rating.userRating ? rating.total : rating.total + 1
+        const oldSum = rating.average * rating.total
+        const newSum = rating.userRating ? oldSum - rating.userRating + stars : oldSum + stars
+        const newAverage = newSum / newTotal
+
+        const newDistribution = { ...rating.distribution }
+        if (rating.userRating) {
+            newDistribution[rating.userRating] = Math.max(0, newDistribution[rating.userRating] - 1)
+        }
+        newDistribution[stars] = (newDistribution[stars] || 0) + 1
+
+        setRating({
+            average: Number(newAverage.toFixed(1)),
+            total: newTotal,
+            distribution: newDistribution,
+            userRating: stars,
+        })
+
+        localStorage.setItem(`cv_rating_${cvId}`, String(stars))
+    }
+
+    return (
+        <Card className="p-6 lg:p-8 space-y-6">
+            <h3 className="text-2xl font-bold">Đánh giá mẫu CV</h3>
+
+            <div className="flex items-center gap-6">
+                <div className="text-center">
+                    <div className="text-5xl font-bold text-primary mb-2">{rating.average}</div>
+                    <div className="flex items-center justify-center gap-1 mb-1">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                            <Star
+                                key={star}
+                                className={`w-5 h-5 ${star <= Math.round(rating.average) ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
+                                    }`}
+                            />
+                        ))}
+                    </div>
+                    <p className="text-sm text-muted-foreground">{rating.total} đánh giá</p>
+                </div>
+
+                <div className="flex-1 space-y-2">
+                    {[5, 4, 3, 2, 1].map((star) => {
+                        const count = rating.distribution[star] || 0
+                        const percentage = rating.total > 0 ? (count / rating.total) * 100 : 0
+                        return (
+                            <div key={star} className="flex items-center gap-2">
+                                <span className="text-sm w-8">{star} ★</span>
+                                <div className="flex-1 h-2 bg-secondary rounded-full overflow-hidden">
+                                    <div className="h-full bg-yellow-400 transition-all" style={{ width: `${percentage}%` }} />
+                                </div>
+                                <span className="text-sm text-muted-foreground w-8 text-right">{count}</span>
+                            </div>
+                        )
+                    })}
+                </div>
+            </div>
+
+            <div className="border-t pt-6">
+                <p className="font-semibold mb-3">Đánh giá của bạn</p>
+                <div className="flex items-center gap-2">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                            key={star}
+                            onClick={() => handleRate(star)}
+                            onMouseEnter={() => setHoveredStar(star)}
+                            onMouseLeave={() => setHoveredStar(null)}
+                            className="transition-transform hover:scale-110"
+                        >
+                            <Star
+                                className={`w-8 h-8 ${star <= (hoveredStar || rating.userRating || 0)
+                                        ? "fill-yellow-400 text-yellow-400"
+                                        : "text-gray-300 hover:text-yellow-400"
+                                    }`}
+                            />
+                        </button>
+                    ))}
+                    {rating.userRating && (
+                        <span className="ml-3 text-sm text-muted-foreground">Bạn đã đánh giá {rating.userRating} sao</span>
+                    )}
+                </div>
+            </div>
+        </Card>
+    )
+}
