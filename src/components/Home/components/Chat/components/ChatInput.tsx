@@ -42,7 +42,7 @@ export default function ChatInput({ value, onChange, onSend, isOpen, isDisabled 
                 <Button
                     onClick={onSend}
                     size="icon"
-                    className="bg-primary hover:primary/90 cursor-pointer"
+                    className="dark:bg-primary bg-primary hover:primary/90 cursor-pointer"
                     disabled={isDisabled}
                 >
                     <Send className="h-4 w-4" />

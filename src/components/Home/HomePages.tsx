@@ -11,7 +11,7 @@ export default function HomePages() {
             <div className="min-h-screen flex flex-col">
 
                 <main className="flex-1">
-                    <HeroSection />
+                    {/* <HeroSection /> */}
                     <DonXinViec
                     />
                 </main>

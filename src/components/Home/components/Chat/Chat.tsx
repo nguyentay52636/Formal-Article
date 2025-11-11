@@ -8,7 +8,7 @@ export default function Chat() {
     const [messages, setMessages] = useState<Message[]>([
         {
             id: "1",
-            text: "Xin chào! Tôi là trợ lý ảo của Sài Gòn Culinary Hub. Tôi có thể giúp gì cho bạn? 🍜",
+            text: "Xin chào! Tôi là trợ lý Mẫu CV. Tôi có thể giúp gì cho bạn? ",
             sender: "bot",
             timestamp: new Date(),
         },

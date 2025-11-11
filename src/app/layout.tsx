@@ -18,7 +18,7 @@ export default function RootLayout({
   const pathname = usePathname();
   const isAdminPage = pathname.startsWith("/quantri");
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
       >
         <ThemeProvider

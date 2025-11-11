@@ -1,3 +1,4 @@
+"use client"
 import { CvEditor } from "@/components/Home/components/CvEditor/CvEditor"
 
 

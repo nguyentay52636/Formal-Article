@@ -10,7 +10,7 @@ interface ChatHeaderProps {
 
 export default function ChatHeader({ onClose }: ChatHeaderProps) {
     return (
-        <div className="bg-primary p-4 flex items-center justify-between flex-shrink-0">
+        <div className="dark:bg-primary bg-primary p-4 flex items-center justify-between flex-shrink-0">
             <div className="flex items-center gap-3">
                 <Avatar className="h-10 w-10 border-2 border-white">
                     <AvatarImage src="/placeholder.svg?height=40&width=40" />

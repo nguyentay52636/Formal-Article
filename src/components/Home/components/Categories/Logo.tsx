@@ -4,8 +4,8 @@ import { FileText, Search } from "lucide-react";
 
 export default function Logo() {
     return (
-        <div className="flex items-center gap-3 px-10 py-6 border-b bg-white shadow-sm">
-            <div className="flex items-center justify-center p-4 bg-[#107bbd]! rounded-full">
+        <div className="flex items-center gap-3 px-10 py-6 border-b shadow-sm">
+            <div className="flex items-center justify-center p-4 rounded-full">
                 <FileText className="h-8 w-8 text-white" />
             </div>
 

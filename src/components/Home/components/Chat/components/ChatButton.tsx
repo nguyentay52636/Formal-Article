@@ -40,7 +40,7 @@ export default function ChatButton({ isOpen, unreadCount, onOpen }: ChatButtonPr
                         <Button
                             onClick={onOpen}
                             size="lg"
-                            className="h-16 w-16 rounded-full bg-primary cursor-pointer shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 relative"
+                            className="h-16 w-16 rounded-full dark:bg-primary bg-primary cursor-pointer shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 relative"
                         >
                             <motion.div
                                 animate={{ rotate: [0, 10, -10, 0] }}

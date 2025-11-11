@@ -9,6 +9,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { navItems } from "./components/router"
 import MobileMenu from "./components/MobileMenu"
+import { SwitchMode } from "@/components/SwitchMode"
 
 export function Header() {
     const [isOpen, setIsOpen] = useState(false)
@@ -22,9 +23,9 @@ export function Header() {
 
     return (
         <header className="sticky top-0 z-50 w-full bg-[#107bbd]! border-b border-border/80 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div className="container mx-auto px-">
-                <div className="flex h-25 items-center justify-between ">
-                    <div className="flex items-center gap-3 text-white! ">
+            <div className="">
+                <div className="flex h-25 items-center justify-between">
+                    <div className="flex items-center gap-3 text-white!">
                         <div className="flex items-center justify-center rounded-full">
                             <FileText className="h-10 w-10 text-white" />
                         </div>
@@ -62,8 +63,8 @@ export function Header() {
                             </div>
                         </div>
 
-                        <Button variant="outline" size="icon" className="lg:hidden text-white!">
-                            <Search className="h-5 w-5" />
+                        <Button variant="outline" className="lg:hidden text-white!">
+                            <Search className="h-6 w-6" />
                         </Button>
 
                         {/* {user ? (
@@ -79,12 +80,14 @@ export function Header() {
                             </div>
                         )} */}
                         <div className="hidden md:flex items-center gap-4 mx-4">
+                            <SwitchMode />
                             <Button variant="outline" size="lg" asChild>
                                 <Link href="/dang-nhap" className="text-md! font-bold">Đăng nhập</Link>
                             </Button>
                             <Button variant="outline" size="lg" asChild>
                                 <Link href="/dang-ky" className="text-md! font-bold">Đăng ký</Link>
                             </Button>
+
                         </div>
 
                         <MobileMenu isOpen={isOpen} setIsOpen={setIsOpen} user={user} />

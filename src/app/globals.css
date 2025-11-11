@@ -118,6 +118,10 @@
     @apply border-border outline-ring/50;
   }
 
+  html {
+    font-size: 70%;
+  }
+
   body {
     @apply bg-background text-foreground;
   }
@@ -125,4 +129,5 @@
   .primary-color {
     @apply bg-[#107bbd];
   }
+
 }
