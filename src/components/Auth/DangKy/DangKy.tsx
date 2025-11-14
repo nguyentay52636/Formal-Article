@@ -55,7 +55,7 @@ export default function DangKy() {
 
     return (
         <div className=" flex flex-col text-[16px] my-10">
-            <main className="flex-1 flex items-center justify-center py-8! px-6 bg-gray-50">
+            <main className="flex-1 flex items-center justify-center py-8! px-6">
                 <div className="w-full max-w-3xl h-full space-y-10">
                     <div className="text-center space-y-3">
                         <div className="flex justify-center">
@@ -63,7 +63,7 @@ export default function DangKy() {
                                 <FileText className="h-7 w-7 text-primary" />
                             </div>
                         </div>
-                        <h1 className="text-4xl font-bold tracking-tight text-gray-900">Thông tin đăng ký</h1>
+                        <h1 className="text-4xl font-bold tracking-tight dark:text-white!">Thông tin đăng ký</h1>
                         <p className="text-gray-500">Điền thông tin để tạo tài khoản mới</p>
                     </div>
 

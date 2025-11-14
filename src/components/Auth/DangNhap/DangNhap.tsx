@@ -20,7 +20,7 @@ export default function DangNhap() {
 
     return (
         <div className=" flex flex-col text-[16px] my-10">
-            <main className="flex-1 flex items-center justify-center py-8! px-6 bg-gray-50">
+            <main className="flex-1 flex items-center justify-center py-8! px-6">
                 <div className="w-full max-w-3xl h-full space-y-10">
                     <div className="text-center space-y-3">
                         <div className="flex justify-center">
@@ -28,8 +28,8 @@ export default function DangNhap() {
                                 <FileText className="h-7 w-7 text-primary" />
                             </div>
                         </div>
-                        <h1 className="text-4xl font-bold tracking-tight text-gray-900">Đăng nhập</h1>
-                        <p className="text-gray-500">Đăng nhập để truy cập tài khoản của bạn</p>
+                        <h1 className="text-4xl font-bold tracking-tight dark:white!">Đăng nhập</h1>
+                        <p className="dark:text-white!">Đăng nhập để truy cập tài khoản của bạn</p>
                     </div>
 
                     {/* Form */}

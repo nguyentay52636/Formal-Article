@@ -8,45 +8,73 @@ import { AnimatePresence } from "framer-motion"
 interface ChatButtonProps {
     isOpen: boolean
     unreadCount: number
-    onOpen: () => void
+    position: { x: number; y: number }
+    isDragging: boolean
+    onMouseDown: (e: React.MouseEvent) => void
 }
 
-export default function ChatButton({ isOpen, unreadCount, onOpen }: ChatButtonProps) {
+export default function ChatButton({
+    isOpen,
+    unreadCount,
+    position,
+    isDragging,
+    onMouseDown
+}: ChatButtonProps) {
     return (
         <AnimatePresence>
             {!isOpen && (
                 <motion.div
                     initial={{ scale: 0, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
+                    animate={{
+                        scale: 1,
+                        opacity: 1,
+                        x: position.x,
+                        y: position.y,
+                    }}
                     exit={{ scale: 0, opacity: 0 }}
-                    className="fixed bottom-6 right-6 z-50 "
+                    style={{
+                        position: "fixed",
+                        left: 0,
+                        top: 0,
+                        zIndex: 9999,
+                        cursor: isDragging ? "grabbing" : "grab",
+                    }}
+                    transition={{
+                        x: { type: "spring", stiffness: 300, damping: 30 },
+                        y: { type: "spring", stiffness: 300, damping: 30 },
+                    }}
                 >
                     <motion.div
                         animate={{
-                            boxShadow: [
-                                "0 0 0 0 rgba(249, 115, 22, 0.4)",
-                                "0 0 0 20px rgba(249, 115, 22, 0)",
-                                "0 0 0 0 rgba(249, 115, 22, 0)",
-
-                            ],
+                            boxShadow: isDragging
+                                ? "0 10px 25px rgba(0, 0, 0, 0.3)"
+                                : [
+                                    "0 0 0 0 rgba(249, 115, 22, 0.4)",
+                                    "0 0 0 20px rgba(249, 115, 22, 0)",
+                                    "0 0 0 0 rgba(249, 115, 22, 0)",
+                                ],
                         }}
                         transition={{
-                            duration: 2,
-                            repeat: Number.POSITIVE_INFINITY,
+                            duration: isDragging ? 0 : 2,
+                            repeat: isDragging ? 0 : Number.POSITIVE_INFINITY,
                             repeatType: "loop",
                         }}
                         className="rounded-full"
                     >
                         <Button
-                            onClick={onOpen}
+                            onMouseDown={onMouseDown}
                             size="lg"
-                            className="h-16 w-16 rounded-full dark:bg-primary bg-primary cursor-pointer shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 relative"
+                            className={`h-16 w-16 rounded-full bg-primary shadow-lg hover:shadow-xl transition-all duration-300 relative ${isDragging ? "scale-110" : "hover:scale-110"
+                                }`}
+                            style={{ userSelect: "none" }}
                         >
                             <motion.div
-                                animate={{ rotate: [0, 10, -10, 0] }}
+                                animate={{
+                                    rotate: isDragging ? 0 : [0, 10, -10, 0]
+                                }}
                                 transition={{
                                     duration: 1.5,
-                                    repeat: Number.POSITIVE_INFINITY,
+                                    repeat: isDragging ? 0 : Number.POSITIVE_INFINITY,
                                     repeatType: "loop",
                                 }}
                             >
