@@ -27,7 +27,7 @@ export default function CallOptions({ isOpen, onVoiceCall, onVideoCall }: CallOp
                         className="w-full text-xs bg-gradient-to-r from-green-500 to-emerald-500 text-white border-0 hover:from-green-600 hover:to-emerald-600"
                     >
                         <Phone className="h-3 w-3 mr-2" />
-                        Gọi thoại
+                        Gọi thoại admin
                     </Button>
                     <Button
                         variant="outline"
@@ -36,11 +36,10 @@ export default function CallOptions({ isOpen, onVoiceCall, onVideoCall }: CallOp
                         className="w-full text-xs bg-gradient-to-r from-blue-500 to-cyan-500 text-white border-0 hover:from-blue-600 hover:to-cyan-600"
                     >
                         <Video className="h-3 w-3 mr-2" />
-                        Gọi video
+                        Gọi video admin
                     </Button>
                 </motion.div>
             )}
         </AnimatePresence>
     )
 }
-

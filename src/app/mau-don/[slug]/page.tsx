@@ -4,11 +4,11 @@ import { templates } from "@/mock/data"
 import { mockDocxHtmlBySlug } from "@/mock/docx-html"
 
 interface PageProps {
-  params: { slug: string }
+  params: Promise<{ slug: string }>
 }
 
-export default function MauDonDetailPage({ params }: PageProps) {
-  const { slug } = params
+export default async function MauDonDetailPage({ params }: PageProps) {
+  const { slug } = await params
   const meta = templates.find((t: any) => t.slug === slug)
 
   return (

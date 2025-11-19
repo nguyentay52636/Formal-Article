@@ -1,10 +1,17 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { ChatButton, ChatWindow, type Message } from "./components"
+import { ChatButton } from "./components"
+import ChatBotWindown from "./components/ChatBotWindown/ChatBotWindown"
+import ChatAdminWindow from "./components/ChatAdminWindow/ChatAdminWindow"
+import { Message } from "./components/ChatBotWindown/ChatBotWindown"
+import { IMessage } from "@/apis/types"
+
+type ChatType = 'ai' | 'admin'
 
 export default function Chat() {
     const [isOpen, setIsOpen] = useState(false)
+    const [chatType, setChatType] = useState<ChatType>('ai')
     const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max)
     const getSafeWindowPosition = () => {
         if (typeof window !== "undefined") {
@@ -178,6 +185,7 @@ export default function Chat() {
             timestamp: new Date(),
         },
     ])
+    const [adminMessages, setAdminMessages] = useState<IMessage[]>([])
     const [inputValue, setInputValue] = useState("")
     const [isTyping, setIsTyping] = useState(false)
     const [unreadCount, setUnreadCount] = useState(0)
@@ -321,6 +329,140 @@ export default function Chat() {
         setMessages((prev) => [...prev, callMessage])
     }
 
+    const handleOptionSelect = (option: 'ai' | 'admin') => {
+        setChatType(option)
+        setIsOpen(true)
+
+        if (option === 'admin') {
+            // Khởi tạo message chào mừng cho admin chat
+            const welcomeMessage: IMessage = {
+                id: Date.now().toString(),
+                roomId: '',
+                senderId: 0,
+                content: "Xin chào! Bạn đã kết nối với bộ phận hỗ trợ. Chuyên viên của chúng tôi sẽ phản hồi bạn sớm nhất có thể. 👨‍💼",
+                senderType: "admin",
+                type: "text",
+                fileUrl: "",
+                fileSize: 0,
+                fileMime: "",
+                replyToId: "",
+                status: "sent",
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+            }
+            setAdminMessages([welcomeMessage])
+        }
+    }
+
+    const handleAdminSendMessage = async () => {
+        if (!inputValue.trim() || isProcessingRef.current || isTyping) {
+            return
+        }
+
+        isProcessingRef.current = true
+        setIsTyping(true)
+
+        const userInput = inputValue.trim()
+        const userMessage: IMessage = {
+            id: Date.now().toString(),
+            roomId: '',
+            senderId: 0, // TODO: Lấy từ user context
+            content: userInput,
+            senderType: "user",
+            type: "text",
+            fileUrl: "",
+            fileSize: 0,
+            fileMime: "",
+            replyToId: "",
+            status: "sent",
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+        }
+
+        setInputValue("")
+        setAdminMessages((prev) => [...prev, userMessage])
+
+        // TODO: Gửi message đến API admin chat
+        // Simulate response
+        setTimeout(() => {
+            const adminResponse: IMessage = {
+                id: (Date.now() + 1).toString(),
+                roomId: '',
+                senderId: 0,
+                content: "Cảm ơn bạn đã liên hệ. Chúng tôi đã nhận được tin nhắn của bạn và sẽ phản hồi trong thời gian sớm nhất. 📧",
+                senderType: "admin",
+                type: "text",
+                fileUrl: "",
+                fileSize: 0,
+                fileMime: "",
+                replyToId: "",
+                status: "sent",
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+            }
+            setAdminMessages((prev) => [...prev, adminResponse])
+            setIsTyping(false)
+            isProcessingRef.current = false
+        }, 1000)
+    }
+
+    const handleAdminContactAdmin = () => {
+        const adminMessage: IMessage = {
+            id: Date.now().toString(),
+            roomId: '',
+            senderId: 0,
+            content: "Bạn đang trong kênh hỗ trợ admin. Vui lòng chờ phản hồi từ chuyên viên. 📧",
+            senderType: "admin",
+            type: "text",
+            fileUrl: "",
+            fileSize: 0,
+            fileMime: "",
+            replyToId: "",
+            status: "sent",
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+        }
+        setAdminMessages((prev) => [...prev, adminMessage])
+    }
+
+    const handleAdminVoiceCall = () => {
+        const callMessage: IMessage = {
+            id: Date.now().toString(),
+            roomId: '',
+            senderId: 0,
+            content: "Đang kết nối cuộc gọi thoại với admin... ☎️ Hotline: +84 123 456 789",
+            senderType: "admin",
+            type: "text",
+            fileUrl: "",
+            fileSize: 0,
+            fileMime: "",
+            replyToId: "",
+            status: "sent",
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+        }
+        setAdminMessages((prev) => [...prev, callMessage])
+    }
+
+    const handleAdminVideoCall = () => {
+        const callMessage: IMessage = {
+            id: Date.now().toString(),
+            roomId: '',
+            senderId: 0,
+            content: "Đang kết nối cuộc gọi video với admin... 📹 Vui lòng chờ trong giây lát...",
+            senderType: "admin",
+            type: "text",
+            fileUrl: "",
+            fileSize: 0,
+            fileMime: "",
+            replyToId: "",
+            status: "sent",
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+        }
+        setAdminMessages((prev) => [...prev, callMessage])
+    }
+
     return (
         <>
             <ChatButton
@@ -329,6 +471,7 @@ export default function Chat() {
                 position={buttonPosition}
                 isDragging={buttonDragging}
                 onMouseDown={handleButtonMouseDown}
+                onOptionSelect={handleOptionSelect}
             />
 
             {isOpen && (
@@ -342,16 +485,39 @@ export default function Chat() {
                     }}
                     onMouseDown={handleMouseDown}
                 >
-                    <ChatWindow
-                        isOpen={isOpen}
-                        messages={messages}
-                        isTyping={isTyping}
-                        inputValue={inputValue}
-                        onClose={() => setIsOpen(false)}
-                        onInputChange={setInputValue}
-                        onSendMessage={handleSendMessage}
-                        isInputDisabled={isTyping || isProcessingRef.current}
-                    />
+                    {chatType === 'ai' ? (
+                        <ChatBotWindown
+                            isOpen={isOpen}
+                            messages={messages}
+                            isTyping={isTyping}
+                            inputValue={inputValue}
+                            onClose={() => setIsOpen(false)}
+                            onInputChange={setInputValue}
+                            onSendMessage={handleSendMessage}
+                            onContactAdmin={handleContactAdmin}
+                            onVoiceCall={handleVoiceCall}
+                            onVideoCall={handleVideoCall}
+                            isInputDisabled={isTyping || isProcessingRef.current}
+                            onDragStart={handleMouseDown}
+                            isDragging={dragging}
+                        />
+                    ) : (
+                        <ChatAdminWindow
+                            isOpen={isOpen}
+                            messages={adminMessages}
+                            isTyping={isTyping}
+                            inputValue={inputValue}
+                            onClose={() => setIsOpen(false)}
+                            onInputChange={setInputValue}
+                            onSendMessage={handleAdminSendMessage}
+                            onContactAdmin={handleAdminContactAdmin}
+                            onVoiceCall={handleAdminVoiceCall}
+                            onVideoCall={handleAdminVideoCall}
+                            isInputDisabled={isTyping || isProcessingRef.current}
+                            onDragStart={handleMouseDown}
+                            isDragging={dragging}
+                        />
+                    )}
                 </div>
             )}
         </>

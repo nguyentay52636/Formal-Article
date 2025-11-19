@@ -5,7 +5,17 @@ import ChatHeader from "./ChatHeader"
 import ChatMessages from "./ChatMessages"
 import ChatActions from "./ChatActions"
 import ChatInput from "./ChatInput"
-import { Message } from "./types"
+export type Sender = "user" | "bot"
+
+export interface Message {
+    id: string
+    text: string
+    sender: Sender
+    timestamp: Date
+}
+
+
+
 
 interface ChatWindowProps {
     isOpen: boolean
@@ -23,7 +33,7 @@ interface ChatWindowProps {
     isDragging?: boolean
 }
 
-export default function ChatWindow({
+export default function ChatBotWindown({
     isOpen,
     messages,
     isTyping,

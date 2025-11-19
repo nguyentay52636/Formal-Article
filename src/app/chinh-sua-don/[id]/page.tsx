@@ -3,18 +3,18 @@ import { CvEditor } from "@/components/Home/components/CvEditor/CvEditor"
 
 
 interface CVEditorPageProps {
-    params: {
-        id: string
-    }
+    params: Promise<{
+        id?: string
+    }>
 }
 
 export default async function page({ params }: CVEditorPageProps) {
-    const { id } = await params
+    const { id }: { id?: string } = await params
 
     return (
         <>
             <div className="h-screen">
-                <CvEditor cvId={id} />
+                <CvEditor cvId={id || ""} />
             </div>
         </>
     )

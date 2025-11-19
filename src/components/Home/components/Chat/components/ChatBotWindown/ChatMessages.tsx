@@ -2,9 +2,9 @@
 
 import { useRef, useEffect } from "react"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Message } from "./types"
-import MessageBubble from "./MessageBubble"
-import TypingIndicator from "./TypingIndicator"
+import { Message } from "./ChatBotWindown"
+import MessageBubble from "../MessageBubble"
+import TypingIndicator from "../TypingIndicator"
 
 interface ChatMessagesProps {
     messages: Message[]
