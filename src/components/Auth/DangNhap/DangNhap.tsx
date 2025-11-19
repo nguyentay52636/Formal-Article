@@ -32,11 +32,10 @@ export default function DangNhap() {
                         <p className="dark:text-white!">Đăng nhập để truy cập tài khoản của bạn</p>
                     </div>
 
-                    {/* Form */}
                     <Card className="shadow-md">
                         <CardHeader>
                             <CardTitle className="text-xl font-semibold">Thông tin đăng nhập</CardTitle>
-                            <CardDescription className="text-md">Nhập email và mật khẩu để đăng nhập</CardDescription>
+                            <CardDescription className="text-md">Nhập email đăng nhập</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <form className="space-y-6">

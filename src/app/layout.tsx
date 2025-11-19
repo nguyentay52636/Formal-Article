@@ -2,12 +2,13 @@
 
 import { Suspense } from "react";
 import "./globals.css";
-import { ThemeProvider } from "@/components/ThemeProvider";
+import { ThemeProvider } from "@/components/Provider/ThemeProvider";
 import { Header } from "@/components/Home";
 import { Footer } from "@/components/Home/components/Footer/Footer";
 import { usePathname } from "next/navigation";
 import Logo from "@/components/Home/components/Categories/Logo";
 import Chat from "@/components/Home/components/Chat/Chat";
+import ReduxProvider from "@/components/Provider/ReduxProvider";
 
 
 export default function RootLayout({
@@ -26,13 +27,16 @@ export default function RootLayout({
           defaultTheme="light"
           enableSystem
         >
-          <Suspense fallback={null}>
-            {!isAdminPage && <Header />}
-            {!isAdminPage && <Logo />}
-            {children}
-            <Chat />
-            {!isAdminPage && <Footer />}
-          </Suspense>
+          <ReduxProvider>
+            <Suspense fallback={null}>
+              {!isAdminPage && <Header />}
+              {!isAdminPage && <Logo />}
+              {children}
+              <Chat />
+              {!isAdminPage && <Footer />}
+            </Suspense>
+          </ReduxProvider>
+
         </ThemeProvider>
       </body>
     </html>

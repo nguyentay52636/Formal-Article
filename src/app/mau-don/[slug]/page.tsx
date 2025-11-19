@@ -1,3 +1,4 @@
+"use client"
 import React from "react"
 import { DocxPreview } from "@/components/DocxPreview"
 import { templates } from "@/mock/data"

@@ -1,5 +1,5 @@
 import baseApi from "@/apis/baseApi"
-import { IUser } from "./types";
+import { IUser, RegisterDTO } from "./types";
 
 
 export const LoginAPI = async (userData: { email?: string, password: string }) => {
@@ -14,7 +14,7 @@ export const LoginAPI = async (userData: { email?: string, password: string }) =
     }
 }
 
-export const registerAPI = async ({ email, fullName, password, phone }: IUser) => {
+export const registerAPI = async ({ email, fullName, password, phone }: RegisterDTO) => {
     try {
         const newUser = { email, fullName, phone, password }
         const { data } = await baseApi.post('/auth/register', newUser)
@@ -22,6 +22,7 @@ export const registerAPI = async ({ email, fullName, password, phone }: IUser) =
     } catch (error: unknown) {
         if (error && typeof error === 'object' && 'response' in error) {
             const responseError = error as { response?: { data?: { message?: string } } };
+            throw new Error(responseError.response?.data?.message || "Đăng ký thất bại");
         }
         if (error instanceof Error) {
             throw new Error(error.message);

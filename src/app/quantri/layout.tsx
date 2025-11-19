@@ -3,7 +3,7 @@
 import React from "react"
 import { useState, useEffect, Suspense } from "react"
 import { SiderAdmin } from "@/components/Admin/components/SiderBar/SiderAdmin"
-import { ThemeProvider } from "@/components/ThemeProvider"
+import { ThemeProvider } from "@/components/Provider/ThemeProvider"
 import { cn } from "@/lib/utils"
 import "../globals.css"
 
