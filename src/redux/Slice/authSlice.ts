@@ -107,8 +107,15 @@ const authSlice = createSlice({
             .addCase(loginThunk.fulfilled, (state, action) => {
                 state.isLoading = false;
 
-                const user = action.payload?.user;
-                const token = action.payload?.token;
+                console.log("🔍 loginThunk.fulfilled - Full action:", action)
+                console.log("🔍 loginThunk.fulfilled - Payload:", action.payload)
+
+                const user = action.payload?.user || action.payload?.data?.user;
+                const token = action.payload?.accessToken || action.payload?.token || action.payload?.data?.accessToken || action.payload?.data?.token;
+
+                console.log("🔍 Extracted user:", user)
+                console.log("🔍 Extracted token:", token)
+                console.log("🔍 Payload keys:", Object.keys(action.payload || {}))
 
                 if (user && token) {
                     state.user = user;
@@ -118,7 +125,19 @@ const authSlice = createSlice({
                     localStorage.setItem("currentUser", JSON.stringify(user));
                     localStorage.setItem("token", token);
                     localStorage.setItem("isAuthenticated", "true");
+
+                    // Log user data on successful login
+                    console.log("✅ Đăng nhập thành công!");
+                    console.log("User data:", user);
+                    console.log("Token:", token);
+                    console.log("📦 LocalStorage saved:", {
+                        currentUser: localStorage.getItem("currentUser"),
+                        token: localStorage.getItem("token"),
+                        isAuthenticated: localStorage.getItem("isAuthenticated")
+                    });
                 } else {
+                    console.log("❌ Missing user or token in payload!");
+                    console.log("Payload structure:", JSON.stringify(action.payload, null, 2));
                     state.error = "Invalid login data";
                 }
             })
@@ -133,9 +152,13 @@ const authSlice = createSlice({
                 state.isLoading = true;
                 state.error = null;
             })
-            .addCase(registerThunk.fulfilled, (state) => {
+            .addCase(registerThunk.fulfilled, (state, action) => {
                 state.isLoading = false;
                 state.registrationSuccess = true;
+
+                // Log registration success
+                console.log("✅ Đăng ký thành công!");
+                console.log("Registration response:", action.payload);
             })
             .addCase(registerThunk.rejected, (state, action) => {
                 state.isLoading = false;

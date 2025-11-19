@@ -9,18 +9,16 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { navItems } from "./components/router"
 import MobileMenu from "./components/MobileMenu"
+import { useSelector } from "react-redux"
+import { selectAuth } from "@/redux/Slice/authSlice"
+import { UserMenu } from "./components/UserMenu"
+import { AuthActions } from "./components/AuthActions"
 import { SwitchMode } from "@/components/SwitchMode"
 
 export function Header() {
     const [isOpen, setIsOpen] = useState(false)
     const router = useRouter()
-    const user = {
-        ten: "John Doe",
-        email: "john.doe@example.com",
-        avatar: "/placeholder.svg",
-        vaiTro: "quan_tri",
-    }
-
+    const { isAuthenticated, user } = useSelector(selectAuth)
     return (
         <header className="sticky top-0 z-50 w-full bg-[#107bbd]! border-b border-border/80 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="">
@@ -66,31 +64,12 @@ export function Header() {
                         <Button variant="outline" className="lg:hidden text-white!">
                             <Search className="h-6 w-6" />
                         </Button>
+                       
 
-                        {/* {user ? (
-                            <ProfileHeader user={user} />
-                        ) : (
-                            <div className="hidden md:flex items-center gap-2">
-                                <Button variant="ghost" size="sm" asChild>
-                                    <Link href="/dang-nhap">Đăng nhập</Link>
-                                </Button>
-                                <Button size="sm" asChild>
-                                    <Link href="/dang-ky">Đăng ký</Link>
-                                </Button>
-                            </div>
-                        )} */}
-                        <div className="hidden md:flex items-center gap-4 mx-4">
-                            <SwitchMode />
-                            <Button variant="outline" size="lg" asChild>
-                                <Link href="/dang-nhap" className="text-md! font-bold">Đăng nhập</Link>
-                            </Button>
-                            <Button variant="outline" size="lg" asChild>
-                                <Link href="/dang-ky" className="text-md! font-bold">Đăng ký</Link>
-                            </Button>
+                        {isAuthenticated ? <UserMenu /> : <AuthActions />}
 
-                        </div>
 
-                        <MobileMenu isOpen={isOpen} setIsOpen={setIsOpen} user={user} />
+                        <MobileMenu isOpen={isOpen} setIsOpen={setIsOpen} user={user as any as any} />
                     </div>
                 </div>
             </div>

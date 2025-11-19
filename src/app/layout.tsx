@@ -9,6 +9,7 @@ import { usePathname } from "next/navigation";
 import Logo from "@/components/Home/components/Categories/Logo";
 import Chat from "@/components/Home/components/Chat/Chat";
 import ReduxProvider from "@/components/Provider/ReduxProvider";
+import { Toaster } from "react-hot-toast";
 
 
 export default function RootLayout({
@@ -36,7 +37,7 @@ export default function RootLayout({
               {!isAdminPage && <Footer />}
             </Suspense>
           </ReduxProvider>
-
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

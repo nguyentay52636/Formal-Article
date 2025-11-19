@@ -1,7 +1,6 @@
 "use client"
 
 import React, { useState } from "react"
-import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -9,14 +8,16 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Loader2, FileText, Eye, EyeOff } from "lucide-react"
+import { useLogin } from "./hooks/useLogin"
 
 export default function DangNhap() {
-    const [email, setEmail] = useState("")
-    const [password, setPassword] = useState("")
     const [showPassword, setShowPassword] = useState(false)
-    const [error, setError] = useState("")
-    const [isLoading, setIsLoading] = useState(false)
-    const router = useRouter()
+    const { form, onSubmit, isLoading, error } = useLogin()
+
+    const {
+        register,
+        formState: { errors },
+    } = form
 
     return (
         <div className=" flex flex-col text-[16px] my-10">
@@ -35,10 +36,10 @@ export default function DangNhap() {
                     <Card className="shadow-md">
                         <CardHeader>
                             <CardTitle className="text-xl font-semibold">Thông tin đăng nhập</CardTitle>
-                            <CardDescription className="text-md">Nhập email đăng nhập</CardDescription>
+                            <CardDescription className="text-md">Nhập email và mật khẩu để đăng nhập</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <form className="space-y-6">
+                            <form onSubmit={onSubmit} className="space-y-6">
                                 {error && (
                                     <Alert variant="destructive">
                                         <AlertDescription>{error}</AlertDescription>
@@ -52,12 +53,13 @@ export default function DangNhap() {
                                         id="email"
                                         type="email"
                                         placeholder="ten@example.com"
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        required
+                                        {...register("email")}
                                         disabled={isLoading}
                                         className="h-12 text-[16px]"
                                     />
+                                    {errors.email && (
+                                        <p className="text-sm text-red-500">{errors.email.message}</p>
+                                    )}
                                 </div>
 
                                 {/* Password */}
@@ -68,9 +70,7 @@ export default function DangNhap() {
                                             id="password"
                                             type={showPassword ? "text" : "password"}
                                             placeholder="••••••••"
-                                            value={password}
-                                            onChange={(e) => setPassword(e.target.value)}
-                                            required
+                                            {...register("password")}
                                             disabled={isLoading}
                                             className="h-12 text-[16px] pr-12"
                                         />
@@ -87,6 +87,9 @@ export default function DangNhap() {
                                             )}
                                         </button>
                                     </div>
+                                    {errors.password && (
+                                        <p className="text-sm text-red-500">{errors.password.message}</p>
+                                    )}
                                     <div className="flex items-center justify-end">
                                         <Link
                                             href="/quen-mat-khau"

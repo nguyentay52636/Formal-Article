@@ -5,6 +5,13 @@ import { IUser, RegisterDTO } from "./types";
 export const LoginAPI = async (userData: { email?: string, password: string }) => {
     try {
         const { data } = await baseApi.post("/auth/login", userData)
+        console.log("🔍 LoginAPI Response:", data)
+        console.log("🔍 Response structure:", {
+            hasUser: !!data?.user,
+            hasToken: !!data?.token,
+            hasAccessToken: !!data?.accessToken,
+            fullData: data
+        })
         return data
     } catch (error: unknown) {
         if (error instanceof Error) {

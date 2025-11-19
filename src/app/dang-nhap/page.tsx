@@ -1,3 +1,4 @@
+"use client"
 import DangNhap from '@/components/Auth/DangNhap/DangNhap'
 import React from 'react'
 
