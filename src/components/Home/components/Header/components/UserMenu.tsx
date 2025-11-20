@@ -73,15 +73,15 @@ export function UserMenu() {
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem asChild>
-                            <Link href="/profile" className="cursor-pointer py-3">
+                            <Link href="/ho-so" className="cursor-pointer py-3">
                                 <User className="mr-3 h-5 w-5" />
-                                <span className="text-base">Profile</span>
+                                <span className="text-base">Hồ sơ</span>
                             </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
-                            <Link href="/admin" className="cursor-pointer py-3">
+                            <Link href="/quantri" className="cursor-pointer py-3">
                                 <Shield className="mr-3 h-5 w-5" />
-                                <span className="text-base">Admin</span>
+                                <span className="text-base">Quản trị</span>
                             </Link>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
@@ -90,7 +90,7 @@ export function UserMenu() {
                             className="cursor-pointer text-destructive py-3"
                         >
                             <LogOut className="mr-3 h-5 w-5" />
-                            <span className="text-base">Logout</span>
+                            <span className="text-base">Đăng xuất</span>
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>

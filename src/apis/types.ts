@@ -42,5 +42,22 @@ export interface IMessage {
 
 }
 export interface IRoom {
-
+    id?: string,
+    roomType: string,
+    status: string,
+    userId: number,
+    adminId: number,
+    aiEnabled?: boolean,
+    createdAt: string,
+    updatedAt: string,
+}
+export interface INotification {
+    id?: number,
+    title: string,
+    message: string,
+    type: string,
+    roomId: string,
+    isRead: string,
+    metadata: string
+    createdAt?: string,
 }

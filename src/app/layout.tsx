@@ -38,6 +38,7 @@ export default function RootLayout({
             </Suspense>
           </ReduxProvider>
           <Toaster />
+
         </ThemeProvider>
       </body>
     </html>

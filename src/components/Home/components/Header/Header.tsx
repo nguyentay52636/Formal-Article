@@ -13,7 +13,7 @@ import { useSelector } from "react-redux"
 import { selectAuth } from "@/redux/Slice/authSlice"
 import { UserMenu } from "./components/UserMenu"
 import { AuthActions } from "./components/AuthActions"
-import { SwitchMode } from "@/components/SwitchMode"
+import Notification from "./components/Notification"
 
 export function Header() {
     const [isOpen, setIsOpen] = useState(false)
@@ -53,20 +53,24 @@ export function Header() {
                         ))}
                     </nav>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center">
                         <div className="hidden lg:flex items-center gap-2">
-                            <div className="relative">
+                            <div className="relative mx-4">
                                 <Search className="absolute text-white!  font-bold left-3 top-1/2 h-8 w- -translate-y-1/2 " />
                                 <Input type="search" placeholder="Tìm kiếm mẫu đơn..." className="w-64 pl-9 text-white! font-sm" />
                             </div>
                         </div>
 
-                        <Button variant="outline" className="lg:hidden text-white!">
-                            <Search className="h-6 w-6" />
-                        </Button>
-                       
+                        <div className="flex items-center ">
+                            <Button variant="outline" className="lg:hidden text-white!">
+                                <Search className="h-6 w-6" />
+                            </Button>
 
-                        {isAuthenticated ? <UserMenu /> : <AuthActions />}
+                            <Notification />
+
+
+                            {isAuthenticated ? <UserMenu /> : <AuthActions />}
+                        </div>
 
 
                         <MobileMenu isOpen={isOpen} setIsOpen={setIsOpen} user={user as any as any} />
