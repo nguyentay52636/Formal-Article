@@ -1,6 +1,7 @@
 "use client"
 
 import { motion, AnimatePresence } from "framer-motion"
+import { Headphones } from "lucide-react"
 import ChatHeaderAdmin from "./components/ChatHeaderAdmin"
 import ChatMessages from "./components/ChatMessages"
 import ChatActions from "./components/ChatActions"
@@ -21,6 +22,7 @@ interface ChatWindowProps {
     isInputDisabled?: boolean
     onDragStart?: (e: React.MouseEvent) => void
     isDragging?: boolean
+    isWaitingForAdmin?: boolean
 }
 
 export default function ChatAdminWindow({
@@ -37,6 +39,7 @@ export default function ChatAdminWindow({
     isInputDisabled = false,
     onDragStart,
     isDragging = false,
+    isWaitingForAdmin = false,
 }: ChatWindowProps) {
     return (
         <AnimatePresence>
@@ -53,10 +56,31 @@ export default function ChatAdminWindow({
                 >
                     <ChatHeaderAdmin onClose={onClose} onDragStart={onDragStart} />
                     <ChatMessages messages={messages} isTyping={isTyping} />
+
+                    {isWaitingForAdmin && (
+                        <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex flex-col items-center justify-center z-50">
+                            <div className="bg-card p-6 rounded-xl shadow-lg border border-border max-w-[80%] text-center">
+                                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4 animate-pulse">
+                                    <Headphones className="w-6 h-6 text-primary" />
+                                </div>
+                                <h3 className="font-semibold text-lg mb-2">Đang chờ Admin</h3>
+                                <p className="text-sm text-muted-foreground mb-4">
+                                    Vui lòng đợi trong giây lát, admin sẽ tham gia cuộc trò chuyện ngay.
+                                </p>
+                                <div className="flex gap-1 justify-center">
+                                    <span className="w-2 h-2 bg-primary rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+                                    <span className="w-2 h-2 bg-primary rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+                                    <span className="w-2 h-2 bg-primary rounded-full animate-bounce"></span>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     <ChatActions
                         onContactAdmin={onContactAdmin}
                         onVoiceCall={onVoiceCall}
                         onVideoCall={onVideoCall}
+                        isDisabled={isWaitingForAdmin}
                     />
                     <ChatInput
                         value={inputValue}

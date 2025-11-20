@@ -56,7 +56,7 @@ export function Header() {
                     <div className="flex items-center">
                         <div className="hidden lg:flex items-center gap-2">
                             <div className="relative mx-4">
-                                <Search className="absolute text-white!  font-bold left-3 top-1/2 h-8 w- -translate-y-1/2 " />
+                                <Search className="absolute text-white!  font-bold left-3 top-1/2 h-6 w-6 -translate-y-1/2 " />
                                 <Input type="search" placeholder="Tìm kiếm mẫu đơn..." className="w-64 pl-9 text-white! font-sm" />
                             </div>
                         </div>

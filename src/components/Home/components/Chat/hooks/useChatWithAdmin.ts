@@ -1,112 +1,79 @@
-import { useState, useEffect, useCallback } from 'react';
-import { IMessage } from '@/apis/types';
+import { useState, useCallback } from 'react';
+import { IMessage, IRoom } from '@/apis/types';
 import { useSelector } from 'react-redux';
 import { selectAuth } from '@/redux/Slice/authSlice';
-import { messageApi } from '@/apis/messageApi';
-import { useSocket } from '@/hooks/useSocket';
+import toast from "react-hot-toast"
+import { createRoomAPI } from '@/apis/roomApi';
 
 export const useChatWithAdmin = () => {
     const { user } = useSelector(selectAuth);
     const [messages, setMessages] = useState<IMessage[]>([]);
     const [roomId, setRoomId] = useState<string | null>(null);
+    const [roomInfo, setRoomInfo] = useState<IRoom | null>(null);
+    const [loading, setLoading] = useState(false);
+
     const userId = user?.id;
-    const adminId = 1;
+    const adminId = 1; // admin mặc định
 
-    const { connect: connectSocket, disconnect: disconnectSocket, subscribe, send, isConnected } = useSocket();
+    /**
+     * CREATE ROOM — chuyển từ JS DOM sang React Hook logic
+     */
+    const createRoom = useCallback(
+        async (initialMessage?: string) => {
+            if (!userId) {
+                toast.error("Bạn chưa đăng nhập!");
+                return;
+            }
 
-    const loadHistory = useCallback(async (rId: string) => {
-        try {
-            const data = await messageApi.getRoomMessages(rId);
-            setMessages(data);
-        } catch (error) {
-            console.error('Error loading history:', error);
-        }
-    }, []);
+            try {
+                setLoading(true);
+                toast.loading("Đang tạo phòng chat...");
 
-    const connect = useCallback(async () => {
-        if (!userId) return;
+                const room = await createRoomAPI({
+                    userId: userId,
+                    roomType: "user-admin",
+                    initialMessage: initialMessage || ""
+                });
 
-        try {
-            const room = await messageApi.createRoom(userId, adminId);
-            const currentRoomId = room.id;
-            setRoomId(currentRoomId);
+                setRoomId(room.id);
+                setRoomInfo(room);
 
-            await loadHistory(currentRoomId);
+                toast.success(`Tạo room thành công! ID: ${room.id}`);
 
+                // Nếu pending thì chờ admin duyệt
+                if (room.status === "pending") {
+                    toast.loading("⏳ Đang chờ admin phê duyệt...");
+                }
 
-            connectSocket();
+                // Nếu active thì load lịch sử + cho chat
+                if (room.status === "active") {
+                    // TODO: loadHistory(room.id)
+                    // TODO: enable chat UI
+                }
 
-        } catch (error) {
-            console.error('Error initializing chat:', error);
-        }
-    }, [userId, adminId, loadHistory, connectSocket]);
+                // TODO: nếu dùng WebSocket thì connect ở đây
+                // connectWebSocket(room.id);
 
-    useEffect(() => {
-        if (isConnected && roomId) {
-            console.log('Subscribing to room:', roomId);
+            } catch (err: any) {
+                console.error(err);
+                toast.error("Tạo room thất bại: " + err.message);
+            } finally {
+                setLoading(false);
+            }
+        },
+        [userId]
+    );
 
-            subscribe('/topic/chat/' + roomId, (msg: any) => {
-                setMessages((prev) => [...prev, msg]);
-            });
-
-            subscribe('/topic/chat/' + roomId + '/update', () => {
-                loadHistory(roomId);
-            });
-
-            subscribe('/topic/chat/' + roomId + '/delete', () => {
-                loadHistory(roomId);
-            });
-        }
-    }, [isConnected, roomId, subscribe, loadHistory]);
-
-    const sendMessage = useCallback((content: string) => {
-        if (roomId && content.trim() && isConnected) {
-            const chatMessage = {
-                senderId: userId,
-                content: content,
-                type: 'text'
-            };
-            send("/app/chat/" + roomId + "/sendMessage", chatMessage);
-        } else {
-            console.warn('Cannot send message: Not connected or missing room ID');
-        }
-    }, [roomId, userId, isConnected, send]);
-
-    const contactAdmin = useCallback(() => {
-        if (roomId && isConnected) {
-            const chatMessage = {
-                senderId: userId,
-                content: "Yêu cầu hỗ trợ từ admin",
-                type: 'text'
-            };
-            send("/app/chat/" + roomId + "/sendMessage", chatMessage);
-        }
-    }, [roomId, userId, isConnected, send]);
-
-    const voiceCall = useCallback(() => {
-        // Placeholder for voice call logic
-        console.log("Voice call requested");
-        // You might emit a specific event or message type here
-    }, []);
-
-    const videoCall = useCallback(() => {
-        // Placeholder for video call logic
-        console.log("Video call requested");
-    }, []);
-
-    const disconnect = useCallback(() => {
-        disconnectSocket();
-        setRoomId(null);
-    }, [disconnectSocket]);
+    const isWaitingForAdmin = roomInfo?.status === 'pending';
 
     return {
         messages,
-        sendMessage,
-        connect,
-        disconnect,
-        isConnected,
-        contactAdmin,
-        voiceCall,
-        videoCall
+        setMessages,
+        roomId,
+        roomInfo,
+        loading,
+        createRoom,
+        adminId,
+        isWaitingForAdmin,
     };
 };

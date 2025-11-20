@@ -6,6 +6,7 @@ import ChatBotWindown from "./components/ChatBotWindown/ChatBotWindown"
 import ChatAdminWindow from "./components/ChatAdminWindow/ChatAdminWindow"
 import { Message } from "./components/ChatBotWindown/ChatBotWindown"
 import { IMessage } from "@/apis/types"
+import { useChatWithAdmin } from "./hooks/useChatWithAdmin"
 
 type ChatType = 'ai' | 'admin'
 
@@ -185,7 +186,16 @@ export default function Chat() {
             timestamp: new Date(),
         },
     ])
-    const [adminMessages, setAdminMessages] = useState<IMessage[]>([])
+
+    // Sử dụng hook useChatWithAdmin
+    const {
+        messages: adminMessages,
+        setMessages: setAdminMessages,
+        createRoom,
+        isWaitingForAdmin,
+        loading: adminLoading
+    } = useChatWithAdmin();
+
     const [inputValue, setInputValue] = useState("")
     const [isTyping, setIsTyping] = useState(false)
     const [unreadCount, setUnreadCount] = useState(0)
@@ -407,22 +417,7 @@ export default function Chat() {
     }
 
     const handleAdminContactAdmin = () => {
-        const adminMessage: IMessage = {
-            id: Date.now().toString(),
-            roomId: '',
-            senderId: 0,
-            content: "Bạn đang trong kênh hỗ trợ admin. Vui lòng chờ phản hồi từ chuyên viên. 📧",
-            senderType: "admin",
-            type: "text",
-            fileUrl: "",
-            fileSize: 0,
-            fileMime: "",
-            replyToId: "",
-            status: "sent",
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-        }
-        setAdminMessages((prev) => [...prev, adminMessage])
+        createRoom("Tôi muốn gặp admin hỗ trợ");
     }
 
     const handleAdminVoiceCall = () => {
@@ -513,9 +508,10 @@ export default function Chat() {
                             onContactAdmin={handleAdminContactAdmin}
                             onVoiceCall={handleAdminVoiceCall}
                             onVideoCall={handleAdminVideoCall}
-                            isInputDisabled={isTyping || isProcessingRef.current}
+                            isInputDisabled={isTyping || isProcessingRef.current || isWaitingForAdmin}
                             onDragStart={handleMouseDown}
                             isDragging={dragging}
+                            isWaitingForAdmin={isWaitingForAdmin}
                         />
                     )}
                 </div>
