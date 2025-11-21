@@ -6,6 +6,7 @@ import { selectAuth } from '@/redux/Slice/authSlice';
 import { selectChat } from '@/redux/Slice/chatSlice';
 import toast from "react-hot-toast"
 import { browseRoomChat, createRoomAPI, deleteRoomChat, getRoomChatPending, getRoomById } from '@/apis/roomApi';
+import { getHistoryChat, sendMessage } from '@/apis/messageApi';
 
 export const useChatWithAdmin = () => {
     const { user } = useSelector(selectAuth);
@@ -16,6 +17,7 @@ export const useChatWithAdmin = () => {
     const [roomInfo, setRoomInfo] = useState<IRoom | null>(null);
     const [loading, setLoading] = useState(false);
     const [pendingRooms, setPendingRooms] = useState<IRoom[]>([]);
+    const [isSending, setIsSending] = useState(false);
 
     const userId = user?.id;
 
@@ -207,13 +209,140 @@ export const useChatWithAdmin = () => {
             if (intervalId) clearInterval(intervalId);
         };
     }, [isWaitingForAdmin, roomId]);
+    // Load chat history
+    useEffect(() => {
+        const fetchHistory = async () => {
+            if (roomId) {
+                try {
+                    // setLoading(true); // Optional: show loading state for messages
+                    const history = await getHistoryChat(roomId);
+                    if (history && Array.isArray(history)) {
+                        setMessages(history);
+                    }
+                } catch (error) {
+                    console.error("Failed to load chat history:", error);
+                    toast.error("Không thể tải lịch sử chat");
+                } finally {
+                    // setLoading(false);
+                }
+            }
+        };
+
+        fetchHistory();
+    }, [roomId]);
+
+    // Subscribe to new messages realtime
+    useEffect(() => {
+        if (roomId && isConnected) {
+            console.log("Subscribing to messages:", roomId);
+            // Backend broadcasts to /topic/chat/{roomId}
+            const subscription = subscribe(`/topic/chat/${roomId}`, (newMessage: IMessage) => {
+                console.log("New message received (socket):", newMessage);
+
+                setMessages((prevMessages) => {
+                    // 1. Check if exact ID exists (deduplication)
+                    const exists = prevMessages.some(msg => msg.id === newMessage.id);
+                    if (exists) {
+                        return prevMessages;
+                    }
+
+                    // 2. If from me, check if we have a pending temp message to replace
+                    if (newMessage.senderId === userId) {
+                        const tempMsgIndex = prevMessages.findIndex(m =>
+                            typeof m.id === 'string' &&
+                            m.id.startsWith('temp-') &&
+                            m.content === newMessage.content
+                        );
+
+                        if (tempMsgIndex !== -1) {
+                            // Replace temp message with real one
+                            const newMsgs = [...prevMessages];
+                            newMsgs[tempMsgIndex] = newMessage;
+                            return newMsgs;
+                        }
+                    }
+
+                    // 3. Otherwise add new
+                    return [...prevMessages, newMessage];
+                });
+
+                // Hiển thị notification nếu tin nhắn không phải từ user hiện tại
+                if (newMessage.senderId !== userId) {
+                    toast.success(`Tin nhắn mới từ ${newMessage.senderType === 'admin' ? 'Admin' : 'User'}`);
+                }
+            });
+
+            return () => {
+                if (subscription) subscription.unsubscribe();
+            };
+        }
+    }, [roomId, isConnected, subscribe, userId]);
+
+    // Gửi tin nhắn realtime
+    const handleSentMessage = useCallback(async (content: string) => {
+        if (!content.trim() || !roomId || !userId || isSending) {
+            return;
+        }
+
+        try {
+            setIsSending(true);
+
+            // Tạo tin nhắn tạm thời để hiển thị ngay lập tức
+            const tempMessage: IMessage = {
+                id: `temp-${Date.now()}`,
+                roomId: roomId,
+                senderId: userId,
+                content: content.trim(),
+                senderType: isAdmin ? "admin" : "user",
+                type: "text",
+                fileUrl: "",
+                fileSize: 0,
+                fileMime: "",
+                replyToId: "",
+                status: "sent",
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+            };
+
+            // Thêm tin nhắn tạm vào UI ngay lập tức
+            setMessages((prev) => [...prev, tempMessage]);
+
+            // Gửi tin nhắn đến server
+            const response = await sendMessage(roomId, userId, {
+                content: content.trim(),
+                type: "text",
+            });
+
+            console.log("Message sent successfully:", response);
+
+            // Cập nhật tin nhắn tạm với tin nhắn thực từ server
+            setMessages((prev) =>
+                prev.map((msg) =>
+                    msg.id === tempMessage.id ? { ...msg, ...response } : msg
+                )
+            );
+
+        } catch (error: any) {
+            console.error("Error sending message:", error);
+            toast.error("Không thể gửi tin nhắn: " + error.message);
+
+            // Xóa tin nhắn tạm nếu gửi thất bại
+            setMessages((prev) =>
+                prev.filter((msg) => msg.id !== `temp-${Date.now()}`)
+            );
+        } finally {
+            setIsSending(false);
+        }
+    }, [roomId, userId, isAdmin, isSending]);
 
     return {
+        handleSentMessage,
         messages,
         setMessages,
         roomId,
         roomInfo,
         loading,
+        isSending,
         createRoom,
         cancelRoom,
         isAdmin,

@@ -89,3 +89,10 @@ export const deleteRoomChat = async (roomId: string) => {
         throw new Error(error);
     }
 }
+export const loadHistoryChat = async () => {
+    try {
+
+    } catch (error: any) {
+
+    }
+}

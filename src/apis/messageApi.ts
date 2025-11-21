@@ -31,3 +31,38 @@ export const updateMessage = async (messageId: string, {
         throw error;
     }
 }
+export interface SendMessageDto {
+    content?: string;
+    type?: string;
+    fileUrl?: string;
+    fileSize?: number;
+    fileMime?: string;
+    replyToId?: number | null;
+}
+
+export const sendMessage = async (
+    roomId: string,
+    senderId: number,
+    message: SendMessageDto
+) => {
+    try {
+        const { data } = await baseApi.post(
+            `/chat/rooms/${roomId}/send?senderId=${senderId}`,
+            message
+        );
+        return data;
+    } catch (error: any) {
+        throw error;
+    }
+};
+
+
+
+export const deleteMessage = async (messageId: number) => {
+    try {
+        const { data } = await baseApi.delete(`/chat/messages/${messageId}`);
+        return data;
+    } catch (error: any) {
+        throw error;
+    }
+}

@@ -9,6 +9,7 @@ import { IMessage } from "@/apis/types"
 import { useChatWithAdmin } from "./hooks/useChatWithAdmin"
 import { useDispatch, useSelector } from "react-redux"
 import { closeChat, openChat, selectChat, setChatType, toggleChat } from "@/redux/Slice/chatSlice"
+import toast from "react-hot-toast"
 
 type ChatType = 'ai' | 'admin'
 
@@ -198,7 +199,10 @@ export default function Chat() {
         createRoom,
         cancelRoom,
         isWaitingForAdmin,
-        loading: adminLoading
+        loading: adminLoading,
+        handleSentMessage,
+        isSending,
+        roomId: adminRoomId
     } = useChatWithAdmin();
 
     const [inputValue, setInputValue] = useState("")
@@ -370,55 +374,27 @@ export default function Chat() {
     }
 
     const handleAdminSendMessage = async () => {
-        if (!inputValue.trim() || isProcessingRef.current || isTyping) {
+        if (!inputValue.trim() || isProcessingRef.current || isSending) {
             return
         }
 
-        isProcessingRef.current = true
-        setIsTyping(true)
-
-        const userInput = inputValue.trim()
-        const userMessage: IMessage = {
-            id: Date.now().toString(),
-            roomId: '',
-            senderId: 0, // TODO: Lấy từ user context
-            content: userInput,
-            senderType: "user",
-            type: "text",
-            fileUrl: "",
-            fileSize: 0,
-            fileMime: "",
-            replyToId: "",
-            status: "sent",
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
+        if (!adminRoomId) {
+            toast.loading("Chưa có phòng chat. Vui lòng tạo phòng trước!");
+            return;
         }
 
-        setInputValue("")
-        setAdminMessages((prev) => [...prev, userMessage])
+        isProcessingRef.current = true
 
-        // TODO: Gửi message đến API admin chat
-        // Simulate response
-        setTimeout(() => {
-            const adminResponse: IMessage = {
-                id: (Date.now() + 1).toString(),
-                roomId: '',
-                senderId: 0,
-                content: "Cảm ơn bạn đã liên hệ. Chúng tôi đã nhận được tin nhắn của bạn và sẽ phản hồi trong thời gian sớm nhất. 📧",
-                senderType: "admin",
-                type: "text",
-                fileUrl: "",
-                fileSize: 0,
-                fileMime: "",
-                replyToId: "",
-                status: "sent",
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-            }
-            setAdminMessages((prev) => [...prev, adminResponse])
-            setIsTyping(false)
+        const userInput = inputValue.trim()
+        setInputValue("")
+
+        try {
+            await handleSentMessage(userInput);
+        } catch (error) {
+            console.error("Error sending admin message:", error);
+        } finally {
             isProcessingRef.current = false
-        }, 1000)
+        }
     }
 
     const handleAdminContactAdmin = () => {
@@ -505,7 +481,7 @@ export default function Chat() {
                         <ChatAdminWindow
                             isOpen={isOpen}
                             messages={adminMessages}
-                            isTyping={isTyping}
+                            isTyping={isSending}
                             inputValue={inputValue}
                             onClose={() => dispatch(closeChat())}
                             onInputChange={setInputValue}
@@ -513,7 +489,7 @@ export default function Chat() {
                             onContactAdmin={handleAdminContactAdmin}
                             onVoiceCall={handleAdminVoiceCall}
                             onVideoCall={handleAdminVideoCall}
-                            isInputDisabled={isTyping || isProcessingRef.current || isWaitingForAdmin}
+                            isInputDisabled={isSending || isProcessingRef.current || isWaitingForAdmin}
                             onDragStart={handleMouseDown}
                             isDragging={dragging}
                             isWaitingForAdmin={isWaitingForAdmin}
