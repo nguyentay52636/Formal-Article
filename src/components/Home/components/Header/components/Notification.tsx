@@ -40,39 +40,71 @@ export default function Notification() {
 
     // Connect to socket if admin
     useEffect(() => {
-        if (user?.role?.id === 1) {
+        if (user?.role?.id === 1 && !isConnected) {
             connect();
         }
-    }, [user?.role?.id, connect]);
+    }, [user?.role?.id, isConnected, connect]);
 
     // Subscribe to notifications
     useEffect(() => {
-        if (isConnected && user?.role?.id === 1) {
-            const subscription = subscribe("/topic/admin/notifications", (message: any) => {
-                console.log("📩 New notification received:", message);
+        if (!isConnected || user?.role?.id !== 1) return;
 
-                const newNotification: INotification = {
-                    id: Date.now(),
-                    title: message.title || "Thông báo mới",
-                    message: message.message || "Bạn có thông báo mới",
-                    type: message.type || "info",
-                    roomId: message.roomId || "",
-                    isRead: "false",
-                    metadata: "",
-                    createdAt: new Date().toISOString()
-                };
+        // console.log("🔔 Subscribing to admin notifications...");
 
-                setNotifications((prev) => [newNotification, ...prev]);
+        const subscription = subscribe("/topic/admin/notifications", (message: any) => {
+            // console.log("📩 New notification received:", message);
+
+            const newNotification: INotification = {
+                id: message.id || Date.now(),
+                title: message.title || "Thông báo mới",
+                message: message.message || "",
+                type: message.type || "info",
+                roomId: message.roomId || "",
+                isRead: "false",
+                metadata: "",
+                createdAt: new Date().toISOString()
+            };
+
+            let shouldAdd = true;
+
+            setNotifications((prev) => {
+                // Kiểm tra duplicate chặt chẽ hơn
+                const isDuplicate = prev.some(n => {
+                    // Check by exact ID
+                    if (message.id && n.id === message.id) return true;
+
+                    // Check by roomId + type + timestamp (trong vòng 2 giây)
+                    if (message.roomId && n.roomId === message.roomId && n.type === message.type) {
+                        const timeDiff = Math.abs(new Date(n.createdAt || 0).getTime() - Date.now());
+                        if (timeDiff < 2000) return true; // Nếu tạo trong vòng 2s thì coi là duplicate
+                    }
+
+                    return false;
+                });
+
+                if (isDuplicate) {
+                    // console.log("⚠️ Duplicate notification detected, skipping...");
+                    shouldAdd = false;
+                    return prev;
+                }
+
+                console.log("✅ Adding new notification");
+                return [newNotification, ...prev];
+            });
+
+            // Chỉ tăng unread count và toast nếu không phải duplicate
+            if (shouldAdd) {
                 setUnreadCount((prev) => prev + 1);
                 toast(newNotification.message, {
                     icon: '🔔',
                 });
-            });
+            }
+        });
 
-            return () => {
-                if (subscription) subscription.unsubscribe();
-            };
-        }
+        return () => {
+            console.log("🔕 Unsubscribing from admin notifications");
+            if (subscription) subscription.unsubscribe();
+        };
     }, [isConnected, subscribe, user?.role?.id]);
 
     return (

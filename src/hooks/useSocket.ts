@@ -72,16 +72,19 @@ export const useSocket = (options: UseSocketOptions = {}) => {
             return null;
         }
 
+        // Nếu đã có subscription cho topic này, unsubscribe trước
         if (subscriptionsRef.current.has(topic)) {
+            // console.log(`⚠️ Topic ${topic} already subscribed, using existing subscription`);
             return subscriptionsRef.current.get(topic);
         }
 
+        console.log(`📡 Creating new subscription for: ${topic}`);
         const subscription = clientRef.current.subscribe(topic, (message: IMessage) => {
             try {
                 const parsedBody = JSON.parse(message.body);
                 callback(parsedBody);
             } catch (e) {
-                console.error("Error parsing message body:", e);
+                // console.error("Error parsing message body:", e);
                 callback(message.body);
             }
         });

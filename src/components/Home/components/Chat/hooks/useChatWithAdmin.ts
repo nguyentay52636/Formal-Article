@@ -34,7 +34,6 @@ export const useChatWithAdmin = () => {
 
             try {
                 setLoading(true);
-                // toast.loading("Đang tạo phòng chat...");
 
                 const room = await createRoomAPI({
                     userId: userId,
@@ -107,11 +106,11 @@ export const useChatWithAdmin = () => {
             setLoading(false);
         }
     }, []);
-    // chap nhap admin vào room
+    // chap nhap admin vào n
     const approveRoom = useCallback(async (roomId: string) => {
 
         try {
-            toast.loading("Đang phê duyệt phòng...");
+            // toast.loading("Đang phê duyệt phòng...");
             if (!adminId) {
                 toast.error("Không tìm thấy ID admin");
                 return;
