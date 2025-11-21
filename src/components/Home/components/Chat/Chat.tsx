@@ -7,12 +7,16 @@ import ChatAdminWindow from "./components/ChatAdminWindow/ChatAdminWindow"
 import { Message } from "./components/ChatBotWindown/ChatBotWindown"
 import { IMessage } from "@/apis/types"
 import { useChatWithAdmin } from "./hooks/useChatWithAdmin"
+import { useDispatch, useSelector } from "react-redux"
+import { closeChat, openChat, selectChat, setChatType, toggleChat } from "@/redux/Slice/chatSlice"
 
 type ChatType = 'ai' | 'admin'
 
 export default function Chat() {
-    const [isOpen, setIsOpen] = useState(false)
-    const [chatType, setChatType] = useState<ChatType>('ai')
+    const dispatch = useDispatch();
+    const { isOpen, chatType, activeRoomId } = useSelector(selectChat);
+    // const [isOpen, setIsOpen] = useState(false)
+    // const [chatType, setChatType] = useState<ChatType>('ai')
     const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max)
     const getSafeWindowPosition = () => {
         if (typeof window !== "undefined") {
@@ -122,7 +126,7 @@ export default function Chat() {
 
         // Nếu không phải drag (chỉ click), mở chat
         if (!isDrag) {
-            setIsOpen(true)
+            dispatch(openChat(chatType));
         }
     }
 
@@ -341,8 +345,8 @@ export default function Chat() {
     }
 
     const handleOptionSelect = (option: 'ai' | 'admin') => {
-        setChatType(option)
-        setIsOpen(true)
+        dispatch(setChatType(option));
+        dispatch(openChat(option));
 
         if (option === 'admin') {
             // Khởi tạo message chào mừng cho admin chat
@@ -487,7 +491,7 @@ export default function Chat() {
                             messages={messages}
                             isTyping={isTyping}
                             inputValue={inputValue}
-                            onClose={() => setIsOpen(false)}
+                            onClose={() => dispatch(closeChat())}
                             onInputChange={setInputValue}
                             onSendMessage={handleSendMessage}
                             onContactAdmin={handleContactAdmin}
@@ -503,7 +507,7 @@ export default function Chat() {
                             messages={adminMessages}
                             isTyping={isTyping}
                             inputValue={inputValue}
-                            onClose={() => setIsOpen(false)}
+                            onClose={() => dispatch(closeChat())}
                             onInputChange={setInputValue}
                             onSendMessage={handleAdminSendMessage}
                             onContactAdmin={handleAdminContactAdmin}

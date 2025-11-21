@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { Client, IMessage } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
-import Stomp from 'stompjs';
 import baseApi from '@/apis/baseApi';
 
 interface UseSocketOptions {
@@ -11,15 +11,16 @@ interface UseSocketOptions {
 
 export const useSocket = (options: UseSocketOptions = {}) => {
     const [isConnected, setIsConnected] = useState(false);
-    const stompClientRef = useRef<any>(null);
+    const clientRef = useRef<Client | null>(null);
     const subscriptionsRef = useRef<Map<string, any>>(new Map());
 
     const connect = useCallback(() => {
-        if (isConnected || stompClientRef.current) return;
+        if (isConnected || clientRef.current?.active) return;
 
         const baseURL = baseApi.defaults.baseURL || "http://localhost:8000/api";
         let wsUrl = options.url || 'http://localhost:8000/ws/chat';
 
+        // Determine WebSocket URL
         if (!options.url) {
             if (baseURL.includes('/api')) {
                 wsUrl = baseURL.replace('/api', '/ws/chat');
@@ -28,43 +29,45 @@ export const useSocket = (options: UseSocketOptions = {}) => {
             }
         }
 
-        try {
-            const socket = new SockJS(wsUrl);
-            const client = Stomp.over(socket);
+        console.log('🔌 Connecting to WebSocket:', wsUrl);
 
-            client.debug = () => { };
-
-            client.connect({}, (frame: any) => {
+        const client = new Client({
+            webSocketFactory: () => new SockJS(wsUrl),
+            reconnectDelay: 5000,
+            heartbeatIncoming: 4000,
+            heartbeatOutgoing: 4000,
+            onConnect: (frame) => {
                 console.log('✅ Socket Connected:', frame);
                 setIsConnected(true);
-                stompClientRef.current = client;
                 if (options.onConnected) options.onConnected();
-            }, (error: any) => {
-                console.error('Socket Error:', error);
+            },
+            onStompError: (frame) => {
+                console.error('❌ Broker reported error: ' + frame.headers['message']);
+                console.error('Additional details: ' + frame.body);
+                if (options.onError) options.onError(frame);
+            },
+            onWebSocketClose: () => {
+                console.log('⚠️ WebSocket Closed');
                 setIsConnected(false);
-                stompClientRef.current = null;
-                subscriptionsRef.current.clear();
-                if (options.onError) options.onError(error);
-            });
-        } catch (error) {
-            console.error('Connection Failed:', error);
-            if (options.onError) options.onError(error);
-        }
-    }, []);
+            }
+        });
+
+        client.activate();
+        clientRef.current = client;
+    }, [isConnected, options]);
 
     const disconnect = useCallback(() => {
-        if (stompClientRef.current) {
-            stompClientRef.current.disconnect(() => {
-                console.log('🔌 Socket Disconnected');
-                setIsConnected(false);
-                stompClientRef.current = null;
-                subscriptionsRef.current.clear();
-            });
+        if (clientRef.current) {
+            clientRef.current.deactivate();
+            console.log('🔌 Socket Disconnected');
+            setIsConnected(false);
+            clientRef.current = null;
+            subscriptionsRef.current.clear();
         }
     }, []);
 
     const subscribe = useCallback((topic: string, callback: (message: any) => void) => {
-        if (!stompClientRef.current || !isConnected) {
+        if (!clientRef.current || !isConnected) {
             console.warn(`⚠️ Cannot subscribe to ${topic}: Socket not connected`);
             return null;
         }
@@ -73,7 +76,7 @@ export const useSocket = (options: UseSocketOptions = {}) => {
             return subscriptionsRef.current.get(topic);
         }
 
-        const subscription = stompClientRef.current.subscribe(topic, (message: any) => {
+        const subscription = clientRef.current.subscribe(topic, (message: IMessage) => {
             try {
                 const parsedBody = JSON.parse(message.body);
                 callback(parsedBody);
@@ -96,21 +99,25 @@ export const useSocket = (options: UseSocketOptions = {}) => {
     }, []);
 
     const send = useCallback((destination: string, body: any, headers: any = {}) => {
-        if (stompClientRef.current && isConnected) {
-            stompClientRef.current.send(destination, headers, JSON.stringify(body));
+        if (clientRef.current && isConnected) {
+            clientRef.current.publish({
+                destination,
+                body: JSON.stringify(body),
+                headers
+            });
         } else {
-            console.warn(` Cannot send to ${destination}: Socket not connected`);
+            console.warn(`⚠️ Cannot send to ${destination}: Socket not connected`);
         }
     }, [isConnected]);
 
     // Cleanup on unmount
     useEffect(() => {
         return () => {
-            if (stompClientRef.current) {
-                disconnect();
+            if (clientRef.current) {
+                clientRef.current.deactivate();
             }
         };
-    }, [disconnect]);
+    }, []);
 
     return {
         connect,
@@ -119,6 +126,6 @@ export const useSocket = (options: UseSocketOptions = {}) => {
         unsubscribe,
         send,
         isConnected,
-        client: stompClientRef.current
+        client: clientRef.current
     };
 };

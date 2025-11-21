@@ -1,12 +1,16 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
+import { useSocket } from '@/hooks/useSocket';
 import { IMessage, IRoom } from '@/apis/types';
 import { useSelector } from 'react-redux';
 import { selectAuth } from '@/redux/Slice/authSlice';
+import { selectChat } from '@/redux/Slice/chatSlice';
 import toast from "react-hot-toast"
 import { browseRoomChat, createRoomAPI, deleteRoomChat, getRoomChatPending } from '@/apis/roomApi';
 
 export const useChatWithAdmin = () => {
     const { user } = useSelector(selectAuth);
+    const { connect, subscribe, isConnected } = useSocket();
+
     const [messages, setMessages] = useState<IMessage[]>([]);
     const [roomId, setRoomId] = useState<string | null>(null);
     const [roomInfo, setRoomInfo] = useState<IRoom | null>(null);
@@ -14,7 +18,9 @@ export const useChatWithAdmin = () => {
     const [pendingRooms, setPendingRooms] = useState<IRoom[]>([]);
 
     const userId = user?.id;
-    const adminId = 1; // admin mặc định
+
+    const isAdmin = user?.role?.id === 1;
+    const adminId = isAdmin ? user?.id : undefined;
 
 
     const createRoom = useCallback(
@@ -101,18 +107,16 @@ export const useChatWithAdmin = () => {
     }, []);
     // chap nhap admin vào room
     const approveRoom = useCallback(async (roomId: string) => {
+
         try {
             toast.loading("Đang phê duyệt phòng...");
-
-            const response = await browseRoomChat(roomId, adminId);
-
-            if (!response.ok) {
-                const text = await response.text();
-                toast.error("Phê duyệt thất bại: " + text);
+            if (!adminId) {
+                toast.error("Không tìm thấy ID admin");
                 return;
             }
+            const response = await browseRoomChat(roomId, adminId);
 
-            const approvedRoom: IRoom = await response.json();
+            const approvedRoom: IRoom = response;
 
             setRoomId(roomId);
             setRoomInfo(approvedRoom);
@@ -128,11 +132,43 @@ export const useChatWithAdmin = () => {
         } catch (error: any) {
             toast.error("Lỗi approve: " + error.message);
         }
-    }, [adminId]);
+    }, [isAdmin, adminId]);
 
 
 
     const isWaitingForAdmin = roomInfo?.status === 'pending';
+
+    const { activeRoomId } = useSelector(selectChat);
+
+    useEffect(() => {
+        if (activeRoomId && user?.role?.id === 1) {
+            approveRoom(activeRoomId);
+        }
+    }, [activeRoomId, user?.role?.id, approveRoom]);
+
+    // Subscribe to room updates
+    useEffect(() => {
+        if (roomId && !isConnected) {
+            connect();
+        }
+    }, [roomId, isConnected, connect]);
+
+    useEffect(() => {
+        if (roomId && isConnected) {
+            console.log("Subscribing to room updates:", roomId);
+            const subscription = subscribe(`/topic/room/${roomId}`, (updatedRoom: IRoom) => {
+                console.log("Room update received:", updatedRoom);
+                setRoomInfo(updatedRoom);
+                if (updatedRoom.status === 'active') {
+                    toast.success("Admin đã vào phòng chat!");
+                }
+            });
+
+            return () => {
+                if (subscription) subscription.unsubscribe();
+            };
+        }
+    }, [roomId, isConnected, subscribe]);
 
     return {
         messages,
@@ -142,10 +178,11 @@ export const useChatWithAdmin = () => {
         loading,
         createRoom,
         cancelRoom,
-        adminId,
+        isAdmin,
         isWaitingForAdmin,
         loadPendingRooms,
         approveRoom,
         pendingRooms,
+        activeRoomId,
     };
 };

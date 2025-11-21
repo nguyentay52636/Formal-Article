@@ -9,21 +9,82 @@ import {
     DropdownMenuLabel,
     DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import { useSocket } from "@/hooks/useSocket";
+import { useSelector } from "react-redux";
+import { selectAuth } from "@/redux/Slice/authSlice";
+import { useEffect, useState } from "react";
+import { INotification } from "@/apis/types";
+import { getAllNotification } from "@/apis/notificationApi";
+import toast from "react-hot-toast";
+import { useDispatch } from "react-redux";
+import { openChat, setActiveRoomId } from "@/redux/Slice/chatSlice";
 
 export default function Notification() {
+    const dispatch = useDispatch();
+    const { user } = useSelector(selectAuth);
+    const { connect, subscribe, isConnected } = useSocket();
+    const [notifications, setNotifications] = useState<INotification[]>([]);
+    const [unreadCount, setUnreadCount] = useState(0);
 
-    const notifications = [
-        { id: 1, text: "Bạn có đơn hàng mới" },
-        { id: 2, text: "Khách vừa nhắn tin hỗ trợ" },
-        { id: 3, text: "Server backup lúc 02:00 AM" },
-    ];
+    useEffect(() => {
+        if (user?.id) {
+            getAllNotification(user.id)
+                .then((data) => {
+                    setNotifications(data);
+                    // Count unread if needed, or just use length for now
+                    setUnreadCount(data.length);
+                })
+                .catch((err) => console.error("Failed to fetch notifications:", err));
+        }
+    }, [user?.id]);
+
+    // Connect to socket if admin
+    useEffect(() => {
+        if (user?.role?.id === 1) {
+            connect();
+        }
+    }, [user?.role?.id, connect]);
+
+    // Subscribe to notifications
+    useEffect(() => {
+        if (isConnected && user?.role?.id === 1) {
+            const subscription = subscribe("/topic/admin/notifications", (message: any) => {
+                console.log("📩 New notification received:", message);
+
+                const newNotification: INotification = {
+                    id: Date.now(),
+                    title: message.title || "Thông báo mới",
+                    message: message.message || "Bạn có thông báo mới",
+                    type: message.type || "info",
+                    roomId: message.roomId || "",
+                    isRead: "false",
+                    metadata: "",
+                    createdAt: new Date().toISOString()
+                };
+
+                setNotifications((prev) => [newNotification, ...prev]);
+                setUnreadCount((prev) => prev + 1);
+                toast(newNotification.message, {
+                    icon: '🔔',
+                });
+            });
+
+            return () => {
+                if (subscription) subscription.unsubscribe();
+            };
+        }
+    }, [isConnected, subscribe, user?.role?.id]);
 
     return (
         <DropdownMenu>
             <DropdownMenuTrigger className="relative outline-none">
                 <Bell className="w-10 h-10 text-white cursor-pointer" />
 
-                <span className="absolute top-0 right-0 block w-2 h-2 bg-red-500 rounded-full"></span>
+                {unreadCount > 0 && (
+                    <span className="absolute top-0 right-0 flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-500 rounded-full">
+                        {unreadCount > 9 ? "9+" : unreadCount}
+                    </span>
+                )}
             </DropdownMenuTrigger>
 
             <DropdownMenuContent className="w-120 mt-2">
@@ -37,12 +98,19 @@ export default function Notification() {
                         Không có thông báo
                     </DropdownMenuItem>
                 ) : (
-                    notifications.map((item) => (
+                    notifications.map((item, index) => (
                         <DropdownMenuItem
-                            key={item.id}
-                            className="cursor-pointer text-sm hover:bg-accent"
+                            key={item.id || index}
+                            className="cursor-pointer text-sm hover:bg-accent flex flex-col items-start py-2"
+                            onClick={() => {
+                                if (item.roomId && user?.role?.id === 1) {
+                                    dispatch(setActiveRoomId(item.roomId));
+                                    dispatch(openChat('admin'));
+                                }
+                            }}
                         >
-                            {item.text}
+                            <span className="font-semibold">{item.title}</span>
+                            <span className="text-xs text-muted-foreground">{item.message}</span>
                         </DropdownMenuItem>
                     ))
                 )}

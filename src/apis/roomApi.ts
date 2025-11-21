@@ -46,16 +46,25 @@ export const getRoomChatPending = async () => {
         throw error;
     }
 }
+interface ApproveRoomPayload {
+    roomId: string;
+    adminId: number;
+}
+
 export const browseRoomChat = async (roomId: string, adminId: number) => {
     try {
-        const { data } = await baseApi.put(`/room-chats/${roomId}/approve`, null, {
-            params: { adminId }
-        });
-        return data;
+        const response = await baseApi.put(
+            `/room-chats/${roomId}/approve`,
+            null,
+            { params: { adminId } }
+        );
+        return response.data;
     } catch (error: any) {
-        throw new Error(error);
+        console.error("Approve room error:", error);
+        throw new Error(error?.response?.data?.message || "Không duyệt được phòng chat");
     }
 };
+
 export const closeRoomChat = async (roomId: string) => {
     try {
         const { data } = await baseApi.put(`/room-chats/${roomId}/close`);
