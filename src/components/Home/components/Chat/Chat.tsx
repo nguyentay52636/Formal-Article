@@ -192,6 +192,7 @@ export default function Chat() {
         messages: adminMessages,
         setMessages: setAdminMessages,
         createRoom,
+        cancelRoom,
         isWaitingForAdmin,
         loading: adminLoading
     } = useChatWithAdmin();
@@ -512,6 +513,7 @@ export default function Chat() {
                             onDragStart={handleMouseDown}
                             isDragging={dragging}
                             isWaitingForAdmin={isWaitingForAdmin}
+                            onCancelWait={cancelRoom}
                         />
                     )}
                 </div>

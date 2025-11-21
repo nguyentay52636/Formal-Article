@@ -64,3 +64,11 @@ export const closeRoomChat = async (roomId: string) => {
         throw new Error(error);
     }
 };
+export const deleteRoomChat = async (roomId: string) => {
+    try {
+        const { data } = await baseApi.delete(`/room-chats/${roomId}`);
+        return data;
+    } catch (error: any) {
+        throw new Error(error);
+    }
+}

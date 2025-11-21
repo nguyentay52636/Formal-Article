@@ -23,6 +23,7 @@ interface ChatWindowProps {
     onDragStart?: (e: React.MouseEvent) => void
     isDragging?: boolean
     isWaitingForAdmin?: boolean
+    onCancelWait?: () => void
 }
 
 export default function ChatAdminWindow({
@@ -40,6 +41,7 @@ export default function ChatAdminWindow({
     onDragStart,
     isDragging = false,
     isWaitingForAdmin = false,
+    onCancelWait,
 }: ChatWindowProps) {
     return (
         <AnimatePresence>
@@ -67,11 +69,19 @@ export default function ChatAdminWindow({
                                 <p className="text-sm text-muted-foreground mb-4">
                                     Vui lòng đợi trong giây lát, admin sẽ tham gia cuộc trò chuyện ngay.
                                 </p>
-                                <div className="flex gap-1 justify-center">
+                                <div className="flex gap-1 justify-center mb-4">
                                     <span className="w-2 h-2 bg-primary rounded-full animate-bounce [animation-delay:-0.3s]"></span>
                                     <span className="w-2 h-2 bg-primary rounded-full animate-bounce [animation-delay:-0.15s]"></span>
                                     <span className="w-2 h-2 bg-primary rounded-full animate-bounce"></span>
                                 </div>
+                                {onCancelWait && (
+                                    <button
+                                        onClick={onCancelWait}
+                                        className="text-xs text-red-500 hover:text-red-600 hover:underline font-medium"
+                                    >
+                                        Hủy yêu cầu
+                                    </button>
+                                )}
                             </div>
                         </div>
                     )}
