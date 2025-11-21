@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux';
 import { selectAuth } from '@/redux/Slice/authSlice';
 import { selectChat } from '@/redux/Slice/chatSlice';
 import toast from "react-hot-toast"
-import { browseRoomChat, createRoomAPI, deleteRoomChat, getRoomChatPending } from '@/apis/roomApi';
+import { browseRoomChat, createRoomAPI, deleteRoomChat, getRoomChatPending, getRoomById } from '@/apis/roomApi';
 
 export const useChatWithAdmin = () => {
     const { user } = useSelector(selectAuth);
@@ -156,11 +156,22 @@ export const useChatWithAdmin = () => {
     useEffect(() => {
         if (roomId && isConnected) {
             console.log("Subscribing to room updates:", roomId);
-            const subscription = subscribe(`/topic/room/${roomId}`, (updatedRoom: IRoom) => {
-                console.log("Room update received:", updatedRoom);
-                setRoomInfo(updatedRoom);
-                if (updatedRoom.status === 'active') {
-                    toast.success("Admin đã vào phòng chat!");
+            const subscription = subscribe(`/topic/room/${roomId}`, async (updatedRoom: IRoom) => {
+                console.log("Room update received (socket):", updatedRoom);
+
+                try {
+                    const freshRoomData = await getRoomById(roomId);
+
+                    console.log("Fresh room data fetched:", freshRoomData);
+                    setRoomInfo(freshRoomData);
+
+                    if (freshRoomData.status === 'active') {
+                        toast.success("Admin đã vào phòng chat!");
+                    }
+                } catch (error) {
+                    console.error("Error fetching fresh room data:", error);
+                    // Fallback to socket data if fetch fails
+                    setRoomInfo(updatedRoom);
                 }
             });
 
@@ -169,6 +180,33 @@ export const useChatWithAdmin = () => {
             };
         }
     }, [roomId, isConnected, subscribe]);
+
+    // Polling fallback for room status
+    useEffect(() => {
+        let intervalId: NodeJS.Timeout;
+
+        if (isWaitingForAdmin && roomId) {
+            console.log("Starting poll for room status:", roomId);
+            intervalId = setInterval(async () => {
+                try {
+                    const freshRoomData = await getRoomById(roomId);
+                    // console.log("Poll result:", freshRoomData);
+
+                    if (freshRoomData.status === 'active' || freshRoomData.adminId) {
+                        console.log("Room active detected via poll:", freshRoomData);
+                        setRoomInfo(freshRoomData);
+                        toast.success("Admin đã vào phòng chat!");
+                    }
+                } catch (error) {
+                    console.error("Polling error:", error);
+                }
+            }, 3000); // Poll every 3 seconds
+        }
+
+        return () => {
+            if (intervalId) clearInterval(intervalId);
+        };
+    }, [isWaitingForAdmin, roomId]);
 
     return {
         messages,

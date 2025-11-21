@@ -22,6 +22,14 @@ export const getListChatByUserId = async (userId: number) => {
         throw error;
     }
 }
+export const getRoomById = async (roomId: string) => {
+    try {
+        const { data } = await baseApi.get<IRoom>(`/room-chats/${roomId}`)
+        return data;
+    } catch (error: any) {
+        throw error;
+    }
+}
 export const getListChatByStatus = async (status: string) => {
     try {
         const { data } = await baseApi.get<IRoom[]>(`/room-chats?status=${status}`);
