@@ -1,5 +1,5 @@
 export interface IUser {
-    id?: number,
+    id: number,
     fullName: string,
     phone: string,
     email: string,
@@ -52,12 +52,13 @@ export interface IRoom {
     updatedAt: string,
 }
 export interface INotification {
-    id?: number,
-    title: string,
-    message: string,
-    type: string,
-    roomId: string,
-    isRead: string,
-    metadata: string
-    createdAt?: string,
+    id?: number;
+    title: string;
+    message: string;
+    type: string;
+    roomId: string;
+    isRead: boolean;
+    readAt?: string | null;
+    metadata?: any | null;
+    createdAt?: string;
 }
