@@ -6,12 +6,13 @@ export interface ITemplate {
     name: string;
     slug: string;
     summary: string;
-    html: string
-    css: string
+    html?: string
+    css?: string
     previewUrl: string;
     views: number;
     downloads: number;
-    tag: ITag
+    color?: string
+    tag?: ITag
     createdAt: string;
     updatedAt: string;
 }

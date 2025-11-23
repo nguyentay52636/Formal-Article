@@ -18,6 +18,7 @@ import { useSelector, useDispatch } from "react-redux"
 import { selectAuth, logout } from "@/redux/Slice/authSlice"
 import { AppDispatch } from "@/redux/store"
 import { SwitchMode } from "@/components/SwitchMode"
+import BubbleChat from "../../Chat/components/BubbleChat/BubbleChat"
 
 export function UserMenu() {
     const router = useRouter()
@@ -42,8 +43,9 @@ export function UserMenu() {
     return (
         <>
             <div className="flex items-center mx-4">
-                <div className="mr-4">
+                <div className="mr-4 flex gap-4">
                     <SwitchMode />
+                    <BubbleChat />
                 </div>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>

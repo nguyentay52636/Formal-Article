@@ -5,12 +5,13 @@ import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import Image from 'next/image'
 import { Eye, Download } from 'lucide-react'
-import { CVTemplate } from '../../../../data'
+import { ITemplate } from '@/apis/templateApi'
 interface JobApplicationItemProps {
-    jobApplication: CVTemplate
+    jobApplication: ITemplate
 }
 export default function JobApplicationItem({ jobApplication }: JobApplicationItemProps) {
-    const { id, title, image, views, downloads, category, color } = jobApplication;
+
+    const { id, name, slug, summary, previewUrl, views, downloads, tag, color } = jobApplication;
     return (
         <>
             <Link key={jobApplication.id} href={`/don-xin-viec/${jobApplication.id}`}>
@@ -21,8 +22,8 @@ export default function JobApplicationItem({ jobApplication }: JobApplicationIte
                                 MẪU PHỔ BIẾN
                             </Badge>
                             <Image
-                                src={image}
-                                alt={title}
+                                src={previewUrl}
+                                alt={previewUrl}
                                 fill
                                 className="object-cover group-hover:scale-105 transition-transform duration-300"
                             />
@@ -31,13 +32,10 @@ export default function JobApplicationItem({ jobApplication }: JobApplicationIte
                     <CardFooter className="flex flex-col items-start gap-3 p-4">
                         <div className="flex gap-2 flex-wrap">
                             <Badge variant="secondary" className="text-xs">
-                                {category}
-                            </Badge>
-                            <Badge variant="outline" className="text-xs">
-                                {category}
+                                {tag?.name}
                             </Badge>
                         </div>
-                        <h3 className="font-semibold text-sm line-clamp-2 text-balance">{title}</h3>
+                        <h3 className="font-semibold text-sm line-clamp-2 text-balance">{name}</h3>
                         <div className="flex items-center gap-4 text-xs text-muted-foreground w-full">
                             <div className="flex items-center gap-1">
                                 <Eye className="w-3 h-3" />

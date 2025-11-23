@@ -2,15 +2,18 @@
 import React from 'react'
 import JobApplicationItem from './JobApplicationItem'
 import { Button } from '@/components/ui/button'
-import { cvTemplates } from '../../../../data'
-import { CVTemplate } from '../../../../data'
+import { useTemplate } from '../../../../hooks/useTemplate'
+import { ITemplate } from '@/apis/templateApi'
+// import { cvTemplates } from '../../../../data'
+// import { CVTemplate } from '../../../../data'
 
 export default function JobApplicationList() {
+    const { templateCTV } = useTemplate()
     return (
         <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
-                {cvTemplates.map((cv: CVTemplate) => (
-                    <JobApplicationItem key={cv.id} jobApplication={cv as CVTemplate} />
+                {templateCTV.map((cv: ITemplate) => (
+                    <JobApplicationItem key={cv.id} jobApplication={cv} />
                 ))}
             </div>
 
