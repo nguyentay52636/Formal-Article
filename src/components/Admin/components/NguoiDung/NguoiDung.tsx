@@ -4,61 +4,24 @@ import { useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
 import ListCard from "./components/ListCard"
 import SearchBar from "./components/SearchBar"
-import TableNguoiDung, { UserItem } from "./components/TableNguoiDung"
+import TableNguoiDung from "./components/TableNguoiDung"
 import FilterPanel from "./components/FilterPanel"
 import AddUserDialog from "./components/Dialog/AddUserDialog"
 import EditUserDialog from "./components/Dialog/EditUserDialog"
 import DeleteUserDialog from "./components/Dialog/DeleteUserDialog"
 import { PaginationProvider } from "@/context/PaginationProvider"
 import PaginationNguoiDung from "./components/PaginationNguoiDung"
+import { useUser } from "./hooks/useUser"
+import { IUser } from "@/apis/types"
 
-const users: UserItem[] = [
-    {
-        id: 1,
-        hoTen: "Nguyễn Văn A",
-        email: "nguyenvana@example.com",
-        vaiTro: "quan_tri",
-        kichHoat: true,
-        ngayTao: "2024-01-15",
-        soBaiViet: 45,
-    },
-    {
-        id: 2,
-        hoTen: "Trần Thị B",
-        email: "tranthib@example.com",
-        vaiTro: "bien_tap",
-        kichHoat: true,
-        ngayTao: "2024-02-20",
-        soBaiViet: 28,
-    },
-    {
-        id: 3,
-        hoTen: "Lê Văn C",
-        email: "levanc@example.com",
-        vaiTro: "tac_gia",
-        kichHoat: true,
-        ngayTao: "2024-03-10",
-        soBaiViet: 12,
-    },
-    {
-        id: 4,
-        hoTen: "Phạm Thị D",
-        email: "phamthid@example.com",
-        vaiTro: "doc_gia",
-        kichHoat: false,
-        ngayTao: "2024-04-05",
-        soBaiViet: 0,
-    },
-]
-
-const roleColors: Record<UserItem['vaiTro'], string> = {
+const roleColors: Record<string, string> = {
     quan_tri: "bg-destructive text-destructive-foreground",
     bien_tap: "bg-primary text-primary-foreground",
     tac_gia: "bg-secondary text-secondary-foreground",
     doc_gia: "bg-muted text-muted-foreground",
 }
 
-const roleLabels: Record<UserItem['vaiTro'], string> = {
+const roleLabels: Record<string, string> = {
     quan_tri: "Quản trị",
     bien_tap: "Biên tập",
     tac_gia: "Tác giả",
@@ -66,11 +29,12 @@ const roleLabels: Record<UserItem['vaiTro'], string> = {
 }
 
 export default function NguoiDung() {
+    const { users, refresh } = useUser()
     const [searchQuery, setSearchQuery] = useState("")
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
-    const [selectedUser, setSelectedUser] = useState<any>(null)
+    const [selectedUser, setSelectedUser] = useState<IUser | null>(null)
     const [filterRole, setFilterRole] = useState<string>("all")
     const [filterStatus, setFilterStatus] = useState<string>("all")
     const [showFilters, setShowFilters] = useState(false)
@@ -83,28 +47,38 @@ export default function NguoiDung() {
 
     const activeFiltersCount = [filterRole !== "all", filterStatus !== "all"].filter(Boolean).length
 
-    const handleEdit = (user: any) => {
+    const handleEdit = (user: IUser) => {
         setSelectedUser(user)
         setIsEditDialogOpen(true)
     }
 
-    const handleDelete = (user: any) => {
+    const handleDelete = (user: IUser) => {
         setSelectedUser(user)
         setIsDeleteDialogOpen(true)
+    }
+
+    const getRoleKey = (user: IUser): string => {
+        if (user.role?.name === 'admin') return 'quan_tri';
+        if (user.role?.name === 'editor') return 'bien_tap';
+        if (user.role?.name === 'author') return 'tac_gia';
+        return 'doc_gia';
     }
 
     const filteredUsers = useMemo(() => {
         return users.filter((user) => {
             const matchesSearch =
-                user.hoTen.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                user.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 user.email.toLowerCase().includes(searchQuery.toLowerCase())
-            const matchesRole = filterRole !== "all" ? user.vaiTro === (filterRole as UserItem['vaiTro']) : true
+
+            const roleKey = getRoleKey(user);
+            const matchesRole = filterRole !== "all" ? roleKey === filterRole : true
+
             const matchesStatus =
-                filterStatus !== "all" ? (user.kichHoat ? filterStatus === "active" : filterStatus === "inactive") : true
+                filterStatus !== "all" ? (user.active ? filterStatus === "active" : filterStatus === "inactive") : true
 
             return matchesSearch && matchesRole && matchesStatus
         })
-    }, [searchQuery, filterRole, filterStatus])
+    }, [users, searchQuery, filterRole, filterStatus])
 
     return (
         <div className="space-y-6">
@@ -113,7 +87,7 @@ export default function NguoiDung() {
                     <h1 className="text-3xl font-bold">Quản lý người dùng</h1>
                     <p className="text-muted-foreground">Quản lý tài khoản và phân quyền người dùng</p>
                 </div>
-                <AddUserDialog />
+                <AddUserDialog onSuccess={refresh} />
             </div>
 
             <ListCard />
@@ -146,13 +120,14 @@ export default function NguoiDung() {
             />
 
             <PaginationProvider total={users.length} initialPageSize={5}>
+                {/* PaginationNguoiDung might need updates if it uses UserItem, but for now assuming it accepts any[] or we need to check it */}
                 <PaginationNguoiDung users={filteredUsers} />
             </PaginationProvider>
 
 
-            <EditUserDialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen} user={selectedUser} />
+            <EditUserDialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen} user={selectedUser} onSuccess={refresh} />
 
-            <DeleteUserDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen} user={selectedUser} />
+            <DeleteUserDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen} user={selectedUser} onSuccess={refresh} />
         </div>
     )
 }

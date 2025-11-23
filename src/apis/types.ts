@@ -4,7 +4,7 @@ export interface IUser {
     phone: string,
     email: string,
     password: string,
-    avatar: string,
+    avatar?: string,
     active: boolean,
     roleId: number,
     role?: IRole,
