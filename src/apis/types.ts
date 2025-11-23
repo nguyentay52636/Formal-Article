@@ -62,3 +62,10 @@ export interface INotification {
     metadata?: any | null;
     createdAt?: string;
 }
+export interface ITag {
+    id?: number;
+    slug: string;
+    name: string;
+    createdAt?: string;
+    updatedAt?: string;
+}

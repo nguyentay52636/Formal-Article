@@ -11,6 +11,7 @@ import { useStyle } from "./hooks/useStyle"
 import { useChatBot } from "./hooks/useChatBot"
 import { useDispatch, useSelector } from "react-redux"
 import { closeChat, openChat, selectChat, setChatType, toggleChat } from "@/redux/Slice/chatSlice"
+import { selectAuth } from "@/redux/Slice/authSlice"
 import toast from "react-hot-toast"
 
 type ChatType = 'ai' | 'admin'
@@ -18,6 +19,7 @@ type ChatType = 'ai' | 'admin'
 export default function Chat() {
     const dispatch = useDispatch();
     const { isOpen, chatType, activeRoomId } = useSelector(selectChat);
+    const { user } = useSelector(selectAuth);
     // const [isOpen, setIsOpen] = useState(false)
     // const [chatType, setChatType] = useState<ChatType>('ai')
 
@@ -202,6 +204,7 @@ export default function Chat() {
                             isDragging={dragging}
                             isWaitingForAdmin={isWaitingForAdmin}
                             onCancelWait={cancelRoom}
+                            currentUserId={user?.id}
                         />
                     )}
                 </div>

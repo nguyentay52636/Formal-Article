@@ -10,9 +10,10 @@ import type { Message } from "../../types"
 interface ChatMessagesProps {
     messages: IMessage[]
     isTyping: boolean
+    currentUserId?: number
 }
 
-export default function ChatMessages({ messages, isTyping }: ChatMessagesProps) {
+export default function ChatMessages({ messages, isTyping, currentUserId }: ChatMessagesProps) {
     const scrollAreaRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
@@ -26,7 +27,7 @@ export default function ChatMessages({ messages, isTyping }: ChatMessagesProps) 
     const normalizedMessages: Message[] = messages.map((message) => ({
         id: message.id,
         text: message.content,
-        sender: message.senderType === "user" ? "user" : "bot",
+        sender: message.senderId === currentUserId ? "user" : "bot",
         timestamp: new Date(message.createdAt ?? Date.now()),
     }))
 

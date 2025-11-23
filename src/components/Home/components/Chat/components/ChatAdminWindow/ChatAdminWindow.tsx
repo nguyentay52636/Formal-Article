@@ -24,6 +24,7 @@ interface ChatWindowProps {
     isDragging?: boolean
     isWaitingForAdmin?: boolean
     onCancelWait?: () => void
+    currentUserId?: number
 }
 
 export default function ChatAdminWindow({
@@ -42,6 +43,7 @@ export default function ChatAdminWindow({
     isDragging = false,
     isWaitingForAdmin = false,
     onCancelWait,
+    currentUserId,
 }: ChatWindowProps) {
     return (
         <AnimatePresence>
@@ -57,7 +59,7 @@ export default function ChatAdminWindow({
                     }}
                 >
                     <ChatHeaderAdmin onClose={onClose} onDragStart={onDragStart} />
-                    <ChatMessages messages={messages} isTyping={isTyping} />
+                    <ChatMessages messages={messages} isTyping={isTyping} currentUserId={currentUserId} />
 
                     {isWaitingForAdmin && (
                         <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex flex-col items-center justify-center z-50">
