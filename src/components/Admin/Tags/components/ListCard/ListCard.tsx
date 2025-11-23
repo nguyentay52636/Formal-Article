@@ -1,4 +1,4 @@
-import StatsCard from '@/components/Admin/components/BaiViet/components/Cards/StatsCard'
+import StatsCard from '@/components/Admin/components/MauCv/components/Cards/StatsCard'
 import { TrendingUp, BarChart } from 'lucide-react'
 import { Hash, Tag } from 'lucide-react'
 import React from 'react'

@@ -6,8 +6,8 @@ export const menuItems = [
         icon: LayoutDashboard,
     },
     {
-        title: "Bài viết",
-        href: "/quantri/bai-viet",
+        title: "Mẫu CV",
+        href: "/quantri/mau-cv",
         icon: FileText,
     },
     {

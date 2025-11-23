@@ -1,5 +1,5 @@
 import React from 'react'
-import StatsCard from '@/components/Admin/components/BaiViet/components/Cards/StatsCard'
+import StatsCard from '@/components/Admin/components/MauCv/components/Cards/StatsCard'
 import { Folder, CheckCircle, BarChart3, FolderTree } from 'lucide-react'
 
 export default function ListCard() {

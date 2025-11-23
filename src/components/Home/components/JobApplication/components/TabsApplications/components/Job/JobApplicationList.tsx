@@ -2,10 +2,8 @@
 import React from 'react'
 import JobApplicationItem from './JobApplicationItem'
 import { Button } from '@/components/ui/button'
-import { useTemplate } from '../../../../hooks/useTemplate'
 import { ITemplate } from '@/apis/templateApi'
-// import { cvTemplates } from '../../../../data'
-// import { CVTemplate } from '../../../../data'
+import { useTemplate } from '@/hooks/useTemplate'
 
 export default function JobApplicationList() {
     const { templateCTV } = useTemplate()
