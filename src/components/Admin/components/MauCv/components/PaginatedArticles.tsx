@@ -1,7 +1,7 @@
 import React from 'react'
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination'
 import { usePaginateArray, usePagination } from '@/context/PaginationProvider'
-import TablePost, { Article } from './TablePost'
+import TablePost, { Article } from './Temp/TablePost'
 
 interface PaginatedArticlesProps {
     articles: Article[]
