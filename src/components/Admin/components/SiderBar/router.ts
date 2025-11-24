@@ -11,7 +11,7 @@ export const menuItems = [
         icon: FileText,
     },
     {
-        title: "Danh mục",
+        title: "Danh mục CV",
         href: "/quantri/danh-muc",
         icon: FolderTree,
     },
