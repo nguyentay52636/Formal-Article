@@ -3,6 +3,11 @@
 import { Card } from "@/components/ui/card"
 import { Star } from "lucide-react"
 import { useState, useEffect } from "react"
+import { useRating } from "@/hooks/useRating"
+import { useSelector } from "react-redux"
+import { selectAuth } from "@/redux/Slice/authSlice"
+import { IRating } from "@/apis/ratingApi"
+import toast from "react-hot-toast"
 
 interface CVRatingProps {
     cvId: string
@@ -24,33 +29,82 @@ export function CVRating({ cvId }: CVRatingProps) {
     })
     const [hoveredStar, setHoveredStar] = useState<number | null>(null)
 
+    const { getAllRatingByTemplateId, createRating } = useRating()
+    const { user } = useSelector(selectAuth)
+
     useEffect(() => {
-        const savedRating = localStorage.getItem(`cv_rating_${cvId}`)
-        if (savedRating) {
-            setRating((prev) => ({ ...prev, userRating: Number(savedRating) }))
+        const fetchRatings = async () => {
+            if (!cvId) return
+            try {
+                const ratings = await getAllRatingByTemplateId(Number(cvId))
+                if (ratings) {
+                    const total = ratings.length
+                    const sum = ratings.reduce((acc: number, r: IRating) => acc + r.score, 0)
+                    const average = total > 0 ? Number((sum / total).toFixed(1)) : 0
+                    const distribution: { [key: number]: number } = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
+                    ratings.forEach((r: IRating) => {
+                        if (r.score >= 1 && r.score <= 5) {
+                            distribution[r.score] = (distribution[r.score] || 0) + 1
+                        }
+                    })
+
+                    let currentUserRating = null
+                    if (user) {
+                        const myRating = ratings.find((r: IRating) => r.userId === user.id)
+                        if (myRating) {
+                            currentUserRating = myRating.score
+                        }
+                    }
+
+                    setRating({
+                        average,
+                        total,
+                        distribution,
+                        userRating: currentUserRating
+                    })
+                }
+            } catch (error) {
+                console.error(error)
+            }
         }
-    }, [cvId])
+        fetchRatings()
+    }, [cvId, user])
 
-    const handleRate = (stars: number) => {
-        const newTotal = rating.userRating ? rating.total : rating.total + 1
-        const oldSum = rating.average * rating.total
-        const newSum = rating.userRating ? oldSum - rating.userRating + stars : oldSum + stars
-        const newAverage = newSum / newTotal
-
-        const newDistribution = { ...rating.distribution }
-        if (rating.userRating) {
-            newDistribution[rating.userRating] = Math.max(0, newDistribution[rating.userRating] - 1)
+    const handleRate = async (stars: number) => {
+        if (!user) {
+            toast.error("Vui lòng đăng nhập để đánh giá")
+            return
         }
-        newDistribution[stars] = (newDistribution[stars] || 0) + 1
 
-        setRating({
-            average: Number(newAverage.toFixed(1)),
-            total: newTotal,
-            distribution: newDistribution,
-            userRating: stars,
-        })
+        try {
+            await createRating({
+                score: stars,
+                userId: user.id,
+                templateId: Number(cvId)
+            })
 
-        localStorage.setItem(`cv_rating_${cvId}`, String(stars))
+            // Optimistic update
+            const newTotal = rating.userRating ? rating.total : rating.total + 1
+            const oldSum = rating.average * rating.total
+            const newSum = rating.userRating ? oldSum - rating.userRating + stars : oldSum + stars
+            const newAverage = newSum / newTotal
+
+            const newDistribution = { ...rating.distribution }
+            if (rating.userRating) {
+                newDistribution[rating.userRating] = Math.max(0, newDistribution[rating.userRating] - 1)
+            }
+            newDistribution[stars] = (newDistribution[stars] || 0) + 1
+
+            setRating({
+                average: Number(newAverage.toFixed(1)),
+                total: newTotal,
+                distribution: newDistribution,
+                userRating: stars,
+            })
+
+        } catch (error) {
+            console.error(error)
+        }
     }
 
     return (
@@ -102,8 +156,8 @@ export function CVRating({ cvId }: CVRatingProps) {
                         >
                             <Star
                                 className={`w-8 h-8 ${star <= (hoveredStar || rating.userRating || 0)
-                                        ? "fill-yellow-400 text-yellow-400"
-                                        : "text-gray-300 hover:text-yellow-400"
+                                    ? "fill-yellow-400 text-yellow-400"
+                                    : "text-gray-300 hover:text-yellow-400"
                                     }`}
                             />
                         </button>
