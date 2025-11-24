@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect } from "react"
 import { Breadcrumbs } from "./components/Breadcrumbs"
 import { CompanyLogosCard } from "./components/CompanyLogosCard"
 import { CvDescriptionCard } from "./components/CvDescriptionCard"
@@ -7,47 +8,69 @@ import { CvFeaturesCard } from "./components/CvFeaturesCard"
 import { CvPreviewCard } from "./components/CvPreviewCard"
 import { CvTitleSection } from "./components/CvTitleSection"
 import { CvUsageGuideCard } from "./components/CvUsageGuideCard"
-import { ReviewAI } from "./components/Reviews/ReviewAI"
 import { ShareCvCard } from "./components/ShareCvCard"
 import { StatsBar } from "./components/StatsBar"
-import type { CvDetail } from "./types"
-import { CVRating } from "@/components/ui/RatingCv"
-import { CvComment } from "./components/Comment/CvComment"
+import { ITemplate } from "@/apis/templateApi"
+import { useTemplate } from "@/hooks/useTemplate"
+import { Loader2 } from "lucide-react"
 
 interface CvDetailViewProps {
-    cv: CvDetail
+    cv: ITemplate
 }
 
 export function CvDetailView({ cv }: CvDetailViewProps) {
+    const { getTemplateDetails, templateDetails, loading } = useTemplate();
+
+    useEffect(() => {
+        if (cv.id) {
+            getTemplateDetails(Number(cv.id));
+        }
+    }, [cv.id]);
+
+    // Use templateDetails if available, otherwise fall back to initial cv prop
+    const displayCv = templateDetails || cv;
+
+    if (loading && !templateDetails) {
+        return (
+            <div className="flex items-center justify-center min-h-[50vh]">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+        )
+    }
+
     return (
         <main className="container mx-auto px-4 py-8">
-            <Breadcrumbs title={cv.title} />
+            <Breadcrumbs name={displayCv.name} />
 
             <div className="grid lg:grid-cols-[1fr,420px] gap-8 mb-16">
                 <div className="space-y-6">
-                    <StatsBar views={cv.views} downloads={cv.downloads} />
-                    <CvPreviewCard title={cv.title} previewImage={cv.previewImage} />
+                    <StatsBar views={displayCv.views} downloads={displayCv.downloads} />
+
+                    <CvPreviewCard title={displayCv.name} previewImage={displayCv.previewUrl} />
+                    <CvTitleSection id={displayCv.id} title={displayCv.name} tag={displayCv.tag?.name} industry={displayCv.summary} />
+                    {/* GIới thiêu về cv */}
                     <CvDescriptionCard
-                        description={cv.description}
-                        language={cv.language}
-                        category={cv.category}
-                        industry={cv.industry}
+                        description={displayCv.description}
+                        language={displayCv.language}
+                        usage={displayCv.usage}
+                        design={displayCv.design}
+                        features={displayCv.features || []}
                     />
                     <CvUsageGuideCard />
-                    <CVRating cvId={cv.id} />
-                    <ReviewAI cvId={cv.id} cvTitle={cv.title} cvCategory={cv.category} />
-                    <CvComment cvId={cv.id} />
+                    {/* <CVRating cvId={displayCv.id} />
+                    <ReviewAI cvId={displayCv.id} cvTitle={displayCv.name} cvCategory={displayCv.tag?.name} />
+                    <CvComment cvId={displayCv.id} /> */}
                 </div>
 
                 <div className="space-y-6">
                     <div className="sticky top-6 space-y-6">
-                        <CvTitleSection id={cv.id} title={cv.title} category={cv.category} industry={cv.industry} />
+
                         <CvFeaturesCard
-                            description={cv.description}
-                            language={cv.language}
-                            usage={cv.usage}
-                            design={cv.design}
-                            features={cv.features}
+                            description={displayCv.description}
+                            language={displayCv.language}
+                            usage={displayCv.usage}
+                            design={displayCv.design}
+                            features={displayCv.features || []}
                         />
                         <CompanyLogosCard />
                         <ShareCvCard />

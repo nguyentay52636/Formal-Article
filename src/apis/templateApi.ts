@@ -2,7 +2,7 @@ import baseApi from "./baseApi";
 import { ITag } from "./types";
 
 export interface ITemplate {
-    id?: number;
+    id: number;
     name: string;
     slug: string;
     summary: string;
@@ -13,12 +13,18 @@ export interface ITemplate {
     downloads: number;
     color?: string
     tag?: ITag
-    createdAt: string;
-    updatedAt: string;
+    description: string;
+    language: string;
+    usage: string;
+    design: string;
+    features: string[];
+    createdAt?: string;
+    updatedAt?: string;
+
 }
 export const getAllTemplates = async () => {
     try {
-        const { data } = await baseApi.get("/templates");
+        const { data } = await baseApi.get("/templates/all");
         return data;
     } catch (error) {
         console.error("Error fetching templates:", error);

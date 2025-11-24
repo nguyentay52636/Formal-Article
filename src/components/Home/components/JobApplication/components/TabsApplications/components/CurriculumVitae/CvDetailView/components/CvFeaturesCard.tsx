@@ -24,7 +24,7 @@ export function CvFeaturesCard({ description, language, usage, design, features 
                     <span className="font-semibold">Ngôn ngữ:</span> {language}
                 </FeatureItem>
                 <FeatureItem>
-                    <span className="font-semibold">Nội dung mẫu:</span> {usage}
+                    <span className="font-semibold">Đối tượng:</span> {usage}
                 </FeatureItem>
                 <FeatureItem>
                     <span className="font-semibold">Phong cách:</span> {design}

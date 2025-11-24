@@ -7,11 +7,12 @@ import { Card } from "@/components/ui/card"
 interface CvDescriptionCardProps {
     description: string
     language: string
-    category: string
-    industry: string
+    usage: string
+    design: string
+    features: string[]
 }
 
-export function CvDescriptionCard({ description, language, category, industry }: CvDescriptionCardProps) {
+export function CvDescriptionCard({ description, language, usage, design, features }: CvDescriptionCardProps) {
     return (
         <Card className="p-6 lg:p-8 space-y-6">
             <div>
@@ -36,8 +37,8 @@ export function CvDescriptionCard({ description, language, category, industry }:
                         <Palette className="w-5 h-5 text-primary" />
                     </div>
                     <div>
-                        <p className="font-semibold mb-1">Phong cách</p>
-                        <p className="text-sm text-muted-foreground">{category}</p>
+                        <p className="font-semibold mb-1">Đối tượng</p>
+                        <p className="text-sm text-muted-foreground">{usage}</p>
                     </div>
                 </div>
                 <div className="flex items-start gap-3">
@@ -45,8 +46,8 @@ export function CvDescriptionCard({ description, language, category, industry }:
                         <FileText className="w-5 h-5 text-primary" />
                     </div>
                     <div>
-                        <p className="font-semibold mb-1">Ngành nghề</p>
-                        <p className="text-sm text-muted-foreground">{industry}</p>
+                        <p className="font-semibold mb-1">Phong cách</p>
+                        <p className="text-sm text-muted-foreground">{design}</p>
                     </div>
                 </div>
             </div>

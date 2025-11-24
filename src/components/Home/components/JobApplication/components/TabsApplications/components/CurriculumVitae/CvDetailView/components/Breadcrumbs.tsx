@@ -4,10 +4,10 @@ import { ChevronRight } from "lucide-react"
 import Link from "next/link"
 
 interface BreadcrumbsProps {
-    title: string
+    name: string
 }
 
-export function Breadcrumbs({ title }: BreadcrumbsProps) {
+export function Breadcrumbs({ name }: BreadcrumbsProps) {
     return (
         <nav className="mb-8">
             <ol className="flex items-center gap-2 text-sm">
@@ -23,7 +23,7 @@ export function Breadcrumbs({ title }: BreadcrumbsProps) {
                     </Link>
                 </li>
                 <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                <li className="text-muted-foreground line-clamp-1">{title}</li>
+                <li className="text-muted-foreground line-clamp-1">{name}</li>
             </ol>
         </nav>
     )

@@ -1,6 +1,4 @@
 "use client"
-
-import { useEffect, useState } from "react"
 import { Loader2 } from "lucide-react"
 import { useTemplate } from "@/hooks/useTemplate"
 import { TemplateCard } from "./ItemCardTemplate"

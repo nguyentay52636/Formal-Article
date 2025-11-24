@@ -69,7 +69,7 @@ export default function AddTemplateDialog() {
                     Thêm mẫu CV
                 </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-w-4xl! max-h-[100vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>Thêm Template Mới</DialogTitle>
                     <DialogDescription>Tạo mẫu CV mới cho hệ thống</DialogDescription>
