@@ -13,6 +13,7 @@ import { StatsBar } from "./components/StatsBar"
 import { ITemplate } from "@/apis/templateApi"
 import { useTemplate } from "@/hooks/useTemplate"
 import { Loader2 } from "lucide-react"
+import { CVRating } from "@/components/ui/RatingCv"
 
 interface CvDetailViewProps {
     cv: ITemplate
@@ -57,9 +58,10 @@ export function CvDetailView({ cv }: CvDetailViewProps) {
                         features={displayCv.features || []}
                     />
                     <CvUsageGuideCard />
-                    {/* <CVRating cvId={displayCv.id} />
-                    <ReviewAI cvId={displayCv.id} cvTitle={displayCv.name} cvCategory={displayCv.tag?.name} />
-                    <CvComment cvId={displayCv.id} /> */}
+                    <CVRating cvId={displayCv.id} />
+
+                    {/* <CvComment cvId={displayCv.id} />  */}
+                    {/* <ReviewAI cvId={displayCv.id} cvTitle={displayCv.name} cvCategory={displayCv.tag?.name} /> */}
                 </div>
 
                 <div className="space-y-6">
