@@ -3,11 +3,12 @@
 import { Card, CardContent } from "@/components/ui/card"
 
 import { Badge } from "@/components/ui/badge"
-import { Eye, Download, MoreVertical, Pencil, Trash2, Copy } from "lucide-react"
+import { Eye, Download, MoreVertical, Pencil, Trash2, Copy, Heart } from "lucide-react"
 import { useState } from "react"
 import { cn } from "@/lib/utils"
 import { ITemplate } from "@/apis/templateApi"
 import ActionTemplate from "./ActionTemplate"
+import { Button } from "@/components/ui/button"
 
 interface TemplateCardProps {
     template: ITemplate
@@ -30,15 +31,19 @@ export function TemplateCard({ template, onDelete, onUpdate }: TemplateCardProps
     const handleDuplicate = () => {
         if (!template.id) return
     }
+    const [isLiked, setIsLiked] = useState(false)
+
 
     return (
         <Card className={cn("group cursor-pointer overflow-hidden transition-all hover:shadow-lg", isDeleting && "opacity-50")}>
             <div className="relative aspect-[3/4] overflow-hidden bg-muted">
+
                 <img
                     src={template.previewUrl || `/placeholder.svg?height=400&width=300&query=CV template ${template.name}`}
                     alt={template.name}
                     className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                 />
+
                 {template.tag && (
                     <div className="absolute left-3 top-3">
                         <Badge variant="secondary" className="bg-background/90 backdrop-blur-sm">
@@ -46,6 +51,7 @@ export function TemplateCard({ template, onDelete, onUpdate }: TemplateCardProps
                         </Badge>
                     </div>
                 )}
+
                 {/* handlle acc tion */}
                 <ActionTemplate onEdit={() => onUpdate(template)} onDelete={handleDelete} />
             </div>
@@ -69,7 +75,7 @@ export function TemplateCard({ template, onDelete, onUpdate }: TemplateCardProps
 
                 <div className="mt-3 border-t border-border pt-3">
                     <p className="text-xs text-muted-foreground">
-                        Cập nhật: {new Date(template.updatedAt).toLocaleDateString("vi-VN")}
+                        {/* Cập nhật: {new Date(template?.updatedAt).toLocaleDateString("vi-VN")} */}
                     </p>
                 </div>
             </CardContent>

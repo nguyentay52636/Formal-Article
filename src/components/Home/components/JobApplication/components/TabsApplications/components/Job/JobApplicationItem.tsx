@@ -1,16 +1,18 @@
 "use client"
-import React from 'react'
+import React, { useState } from 'react'
 import Link from 'next/link'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import Image from 'next/image'
-import { Eye, Download } from 'lucide-react'
+import { Eye, Download, Heart } from 'lucide-react'
 import { ITemplate } from '@/apis/templateApi'
+import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 interface JobApplicationItemProps {
     jobApplication: ITemplate
 }
 export default function JobApplicationItem({ jobApplication }: JobApplicationItemProps) {
-
+    const [isLiked, setIsLiked] = useState(false)
     const { id, name, slug, summary, previewUrl, views, downloads, tag, color } = jobApplication;
     return (
         <>
@@ -27,7 +29,19 @@ export default function JobApplicationItem({ jobApplication }: JobApplicationIte
                                 fill
                                 className="object-cover group-hover:scale-105 transition-transform duration-300"
                             />
+                            <Button
+                                onClick={() => setIsLiked(!isLiked)}
+                                className="absolute right-3 top-3 z-10 rounded-full bg-white/80 p-2 backdrop-blur-sm shadow hover:bg-white transition"
+                            >
+                                <Heart
+                                    className={cn(
+                                        "h-6 w-6 transition",
+                                        isLiked ? "fill-red-500 text-red-500" : "text-gray-600"
+                                    )}
+                                />
+                            </Button>
                         </div>
+
                     </CardContent>
                     <CardFooter className="flex flex-col items-start gap-3 p-4">
                         <div className="flex gap-2 flex-wrap">

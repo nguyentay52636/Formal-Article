@@ -8,9 +8,10 @@ import { useSelector } from "react-redux"
 import { selectAuth } from "@/redux/Slice/authSlice"
 import { IRating } from "@/apis/ratingApi"
 import toast from "react-hot-toast"
+import ConfirmRatingDialog from "./dialog/ConfirmRatingDialog"
 
 interface CVRatingProps {
-    cvId: string
+    cvId: number
 }
 
 interface RatingData {
@@ -28,6 +29,8 @@ export function CVRating({ cvId }: CVRatingProps) {
         userRating: null,
     })
     const [hoveredStar, setHoveredStar] = useState<number | null>(null)
+    const [showConfirmDialog, setShowConfirmDialog] = useState(false)
+    const [pendingRating, setPendingRating] = useState<number | null>(null)
 
     const { getAllRatingByTemplateId, createRating } = useRating()
     const { user } = useSelector(selectAuth)
@@ -70,15 +73,21 @@ export function CVRating({ cvId }: CVRatingProps) {
         fetchRatings()
     }, [cvId, user])
 
-    const handleRate = async (stars: number) => {
+    const handleRate = (stars: number) => {
         if (!user) {
             toast.error("Vui lòng đăng nhập để đánh giá")
             return
         }
+        setPendingRating(stars)
+        setShowConfirmDialog(true)
+    }
+
+    const confirmRating = async () => {
+        if (!pendingRating || !user) return
 
         try {
             await createRating({
-                score: stars,
+                score: pendingRating,
                 userId: user.id,
                 templateId: Number(cvId)
             })
@@ -86,24 +95,31 @@ export function CVRating({ cvId }: CVRatingProps) {
             // Optimistic update
             const newTotal = rating.userRating ? rating.total : rating.total + 1
             const oldSum = rating.average * rating.total
-            const newSum = rating.userRating ? oldSum - rating.userRating + stars : oldSum + stars
+            const newSum = rating.userRating ? oldSum - rating.userRating + pendingRating : oldSum + pendingRating
             const newAverage = newSum / newTotal
 
             const newDistribution = { ...rating.distribution }
             if (rating.userRating) {
                 newDistribution[rating.userRating] = Math.max(0, newDistribution[rating.userRating] - 1)
             }
-            newDistribution[stars] = (newDistribution[stars] || 0) + 1
+            newDistribution[pendingRating] = (newDistribution[pendingRating] || 0) + 1
 
             setRating({
                 average: Number(newAverage.toFixed(1)),
                 total: newTotal,
                 distribution: newDistribution,
-                userRating: stars,
+                userRating: pendingRating,
             })
 
-        } catch (error) {
+            // toast.success("Đánh giá thành công") // createRating already shows toast? Let's check hook. Yes it does.
+
+        } catch (error: any) {
             console.error(error)
+            if (error.response && error.response.data && error.response.data.message === "User has already rated this template") {
+                toast.error("Bạn đã đánh giá mẫu này rồi")
+            } else {
+                toast.error("Có lỗi xảy ra khi đánh giá")
+            }
         }
     }
 
@@ -167,6 +183,11 @@ export function CVRating({ cvId }: CVRatingProps) {
                     )}
                 </div>
             </div>
+            <ConfirmRatingDialog
+                open={showConfirmDialog}
+                onOpenChange={setShowConfirmDialog}
+                onConfirm={confirmRating}
+            />
         </Card>
     )
 }
