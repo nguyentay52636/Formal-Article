@@ -6,9 +6,32 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
-import { Plus } from "lucide-react"
+import { Plus, Upload } from "lucide-react"
 import { createUser } from "@/apis/userApi"
 import { toast } from "react-hot-toast"
+import { useForm, Controller } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import * as z from "zod"
+import { uploadToLocalStorage } from "@/apis/uploadApi"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { getAllRoles } from "@/apis/roleApi"
+import { IRole } from "@/apis/types"
+
+const formSchema = z.object({
+    hoTen: z.string().min(1, "Họ tên là bắt buộc"),
+    email: z.string().min(1, "Email là bắt buộc").email("Email không hợp lệ"),
+    matKhau: z.string().min(6, "Mật khẩu phải có ít nhất 6 ký tự"),
+    xacNhanMatKhau: z.string().min(1, "Vui lòng xác nhận mật khẩu"),
+    vaiTro: z.string(),
+    kichHoat: z.boolean(),
+    phone: z.string().optional(),
+    avatar: z.string().optional()
+}).refine((data) => data.matKhau === data.xacNhanMatKhau, {
+    message: "Mật khẩu xác nhận không khớp",
+    path: ["xacNhanMatKhau"],
+});
+
+type FormData = z.infer<typeof formSchema>;
 
 type Props = {
     onSuccess?: () => void
@@ -17,69 +40,98 @@ type Props = {
 export default function AddUserDialog({ onSuccess }: Props) {
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(false)
-    const [formData, setFormData] = useState({
-        hoTen: "",
-        email: "",
-        matKhau: "",
-        xacNhanMatKhau: "",
-        vaiTro: "doc_gia",
-        kichHoat: true
+    const [uploading, setUploading] = useState(false)
+    const [roles, setRoles] = useState<IRole[]>([])
+
+    const {
+        register,
+        handleSubmit,
+        control,
+        reset,
+        setValue,
+        watch,
+        setError,
+        formState: { errors },
+    } = useForm<FormData>({
+        resolver: zodResolver(formSchema),
+        defaultValues: {
+            hoTen: "",
+            email: "",
+            matKhau: "",
+            xacNhanMatKhau: "",
+            vaiTro: "",
+            kichHoat: true,
+            phone: "",
+            avatar: ""
+        }
     })
 
-    const handleChange = (field: string, value: any) => {
-        console.log(`🔄 Field changed: ${field} = ${value}`);
-        setFormData(prev => ({ ...prev, [field]: value }))
-    }
+    const avatarUrl = watch("avatar");
 
-    // Reset form when dialog opens
+    // Fetch roles when dialog opens
     useEffect(() => {
         if (open) {
-            console.log("🔓 Dialog opened, resetting form");
-            setFormData({
+            const fetchRoles = async () => {
+                const data = await getAllRoles();
+                if (data && data.length > 0) {
+                    setRoles(data);
+                    // Set default role if available, e.g., 'USER' or the first one
+                    const defaultRole = data.find((r: IRole) => r.name === 'USER') || data[0];
+                    setValue("vaiTro", defaultRole.id?.toString() || "");
+                }
+            };
+            fetchRoles();
+
+            reset({
                 hoTen: "",
                 email: "",
                 matKhau: "",
                 xacNhanMatKhau: "",
-                vaiTro: "doc_gia",
-                kichHoat: true
+                vaiTro: "",
+                kichHoat: true,
+                phone: "",
+                avatar: ""
             });
         }
-    }, [open]);
+    }, [open, reset, setValue]);
 
-    // Log form data changes
-    useEffect(() => {
-        console.log("📝 Form data:", formData);
-    }, [formData]);
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
 
-    const handleSubmit = async () => {
-        if (!formData.hoTen || !formData.email || !formData.matKhau) {
-            toast.error("Vui lòng điền đầy đủ thông tin");
-            return;
+        setUploading(true);
+        try {
+            const res = await uploadToLocalStorage(file);
+            console.log("📸 Upload response:", res);
+            if (res) {
+                // Assuming res is the URL string or contains url property
+                const url = typeof res === 'string' ? res : res.url || res.path;
+                setValue("avatar", url);
+                toast.success("Upload ảnh thành công");
+            } else {
+                toast.error("Upload ảnh thất bại");
+            }
+        } catch (error) {
+            console.error("Upload error:", error);
+            toast.error("Lỗi khi upload ảnh");
+        } finally {
+            setUploading(false);
         }
-        if (formData.matKhau !== formData.xacNhanMatKhau) {
-            toast.error("Mật khẩu xác nhận không khớp");
-            return;
-        }
+    };
 
-        // Map role string to roleId if needed, or send as is if API supports it.
-        // API expects IUser which has roleId.
-        // I'll assume roleId mapping:
-        const roleMap: Record<string, number> = {
-            quan_tri: 1, // Example IDs
-            bien_tap: 2,
-            tac_gia: 3,
-            doc_gia: 4
-        }
-
+    const onSubmit = async (data: FormData) => {
         const newUser: any = {
-            fullName: formData.hoTen,
-            email: formData.email,
-            password: formData.matKhau,
-            active: formData.kichHoat,
-            roleId: roleMap[formData.vaiTro] || 4,
-            phone: "", // Default or add field
-            avatar: "" // Default
+            fullName: data.hoTen,
+            email: data.email,
+            password: data.matKhau,
+            active: data.kichHoat,
+            roleId: Number(data.vaiTro),
+            phone: data.phone || "",
+            avatar: data.avatar || ""
         }
+
+        console.log("📝 Form data submitted:", data);
+        console.log("📦 Payload to be sent:", newUser);
 
         setLoading(true);
         try {
@@ -87,20 +139,60 @@ export default function AddUserDialog({ onSuccess }: Props) {
             if (res) {
                 toast.success("Thêm người dùng thành công");
                 setOpen(false);
-                setFormData({
-                    hoTen: "",
-                    email: "",
-                    matKhau: "",
-                    xacNhanMatKhau: "",
-                    vaiTro: "doc_gia",
-                    kichHoat: true
-                });
-                onSuccess?.(); // Trigger parent refresh
+                reset();
+                onSuccess?.();
             } else {
                 toast.error("Thêm người dùng thất bại");
             }
-        } catch (error) {
-            toast.error("Thêm người dùng thất bại");
+        } catch (error: any) {
+            console.error("Create user error:", error);
+            console.log("❌ Server Error Data:", error.response?.data);
+
+            if (error.response && error.response.data) {
+                const errorData = error.response.data;
+
+                // Case 1: Error is a string
+                if (typeof errorData === 'string') {
+                    if (errorData.toLowerCase().includes("email")) {
+                        setError("email", { type: "manual", message: errorData });
+                    } else if (errorData.toLowerCase().includes("phone")) {
+                        setError("phone", { type: "manual", message: errorData });
+                    } else {
+                        toast.error("Lỗi: " + errorData);
+                    }
+                }
+                // Case 2: Error is an object with 'message' property
+                else if (errorData.message) {
+                    if (typeof errorData.message === 'string') {
+                        if (errorData.message.toLowerCase().includes("email")) {
+                            setError("email", { type: "manual", message: errorData.message });
+                        } else if (errorData.message.toLowerCase().includes("phone")) {
+                            setError("phone", { type: "manual", message: errorData.message });
+                        } else {
+                            toast.error("Lỗi: " + errorData.message);
+                        }
+                    } else {
+                        toast.error("Thêm người dùng thất bại");
+                    }
+                }
+                // Case 3: Error is an object with field keys (e.g. { email: "...", phone: "..." })
+                else {
+                    let handled = false;
+                    if (errorData.email) {
+                        setError("email", { type: "manual", message: errorData.email });
+                        handled = true;
+                    }
+                    if (errorData.phone) {
+                        setError("phone", { type: "manual", message: errorData.phone });
+                        handled = true;
+                    }
+                    if (!handled) {
+                        toast.error("Thêm người dùng thất bại: " + JSON.stringify(errorData));
+                    }
+                }
+            } else {
+                toast.error("Thêm người dùng thất bại");
+            }
         } finally {
             setLoading(false);
         }
@@ -114,24 +206,49 @@ export default function AddUserDialog({ onSuccess }: Props) {
                     Thêm người dùng
                 </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>Thêm người dùng mới</DialogTitle>
                     <DialogDescription>
                         Điền thông tin để tạo tài khoản người dùng mới
                     </DialogDescription>
                 </DialogHeader>
-                <div className="space-y-4">
+
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                    <div className="flex justify-center mb-4">
+                        <div className="relative">
+                            <Avatar className="w-24 h-24">
+                                <AvatarImage src={avatarUrl} />
+                                <AvatarFallback>{watch("hoTen")?.charAt(0)?.toUpperCase() || "U"}</AvatarFallback>
+                            </Avatar>
+                            <Label
+                                htmlFor="avatar-upload"
+                                className="absolute bottom-0 right-0 bg-primary text-primary-foreground p-1 rounded-full cursor-pointer hover:bg-primary/90"
+                            >
+                                <Upload className="h-4 w-4" />
+                                <Input
+                                    id="avatar-upload"
+                                    type="file"
+                                    className="hidden"
+                                    accept="image/*"
+                                    onChange={handleFileUpload}
+                                    disabled={uploading}
+                                />
+                            </Label>
+                        </div>
+                    </div>
+
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label htmlFor="hoTen">Họ và tên *</Label>
                             <Input
                                 id="hoTen"
                                 placeholder="Nguyễn Văn A"
-                                value={formData.hoTen}
-                                onChange={(e) => handleChange("hoTen", e.target.value)}
+                                {...register("hoTen")}
                                 autoComplete="off"
+                                className={errors.hoTen ? "border-red-500" : ""}
                             />
+                            {errors.hoTen && <span className="text-red-500 text-sm">{errors.hoTen.message}</span>}
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="email">Email *</Label>
@@ -139,9 +256,45 @@ export default function AddUserDialog({ onSuccess }: Props) {
                                 id="email"
                                 type="email"
                                 placeholder="nguyenvana@example.com"
-                                value={formData.email}
-                                onChange={(e) => handleChange("email", e.target.value)}
+                                {...register("email")}
                                 autoComplete="off"
+                                className={errors.email ? "border-red-500" : ""}
+                            />
+                            {errors.email && <span className="text-red-500 text-sm">{errors.email.message}</span>}
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="phone">Số điện thoại</Label>
+                            <Input
+                                id="phone"
+                                placeholder="0912345678"
+                                {...register("phone")}
+                                autoComplete="off"
+                                className={errors.phone ? "border-red-500" : ""}
+                            />
+                            {errors.phone && <span className="text-red-500 text-sm">{errors.phone.message}</span>}
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="vaiTro">Vai trò *</Label>
+                            <Controller
+                                name="vaiTro"
+                                control={control}
+                                render={({ field }) => (
+                                    <Select onValueChange={field.onChange} value={field.value}>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Chọn vai trò" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {roles.map((role) => (
+                                                <SelectItem key={role.id} value={role.id?.toString() || ""}>
+                                                    {role.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                )}
                             />
                         </div>
                     </div>
@@ -153,10 +306,11 @@ export default function AddUserDialog({ onSuccess }: Props) {
                                 id="matKhau"
                                 type="password"
                                 placeholder="••••••••"
-                                value={formData.matKhau}
-                                onChange={(e) => handleChange("matKhau", e.target.value)}
+                                {...register("matKhau")}
                                 autoComplete="new-password"
+                                className={errors.matKhau ? "border-red-500" : ""}
                             />
+                            {errors.matKhau && <span className="text-red-500 text-sm">{errors.matKhau.message}</span>}
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="xacNhanMatKhau">Xác nhận mật khẩu *</Label>
@@ -164,49 +318,39 @@ export default function AddUserDialog({ onSuccess }: Props) {
                                 id="xacNhanMatKhau"
                                 type="password"
                                 placeholder="••••••••"
-                                value={formData.xacNhanMatKhau}
-                                onChange={(e) => handleChange("xacNhanMatKhau", e.target.value)}
+                                {...register("xacNhanMatKhau")}
                                 autoComplete="new-password"
+                                className={errors.xacNhanMatKhau ? "border-red-500" : ""}
                             />
+                            {errors.xacNhanMatKhau && <span className="text-red-500 text-sm">{errors.xacNhanMatKhau.message}</span>}
                         </div>
-                    </div>
-
-                    <div className="space-y-2">
-                        <Label htmlFor="vaiTro">Vai trò *</Label>
-                        <Select
-                            value={formData.vaiTro}
-                            onValueChange={(value) => handleChange("vaiTro", value)}
-                        >
-                            <SelectTrigger>
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="quan_tri">Quản trị viên</SelectItem>
-                                <SelectItem value="bien_tap">Biên tập viên</SelectItem>
-                                <SelectItem value="tac_gia">Tác giả</SelectItem>
-                                <SelectItem value="doc_gia">Độc giả</SelectItem>
-                            </SelectContent>
-                        </Select>
                     </div>
 
                     <div className="flex items-center justify-between">
                         <Label htmlFor="kichHoat">Kích hoạt tài khoản</Label>
-                        <Switch
-                            id="kichHoat"
-                            checked={formData.kichHoat}
-                            onCheckedChange={(checked) => handleChange("kichHoat", checked)}
+                        <Controller
+                            name="kichHoat"
+                            control={control}
+                            render={({ field }) => (
+                                <Switch
+                                    id="kichHoat"
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                />
+                            )}
                         />
                     </div>
-                </div>
-                <DialogFooter>
-                    <Button variant="outline" onClick={() => setOpen(false)}>
-                        Hủy
-                    </Button>
-                    <Button onClick={handleSubmit}>Tạo tài khoản</Button>
-                </DialogFooter>
+
+                    <DialogFooter>
+                        <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+                            Hủy
+                        </Button>
+                        <Button type="submit" disabled={loading || uploading}>
+                            {loading ? "Đang xử lý..." : "Tạo tài khoản"}
+                        </Button>
+                    </DialogFooter>
+                </form>
             </DialogContent>
         </Dialog>
     )
 }
-
-
