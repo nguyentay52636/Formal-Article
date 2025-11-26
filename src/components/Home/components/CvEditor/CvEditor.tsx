@@ -63,10 +63,10 @@ interface HistoryState {
     selectedColor: string
     selectedFont: string
     fontSize: number
-    templateStyle: string
+    template: string
 }
 
-export function CvEditor({ cvId, template }: CVEditorProps) {
+export function CvEditor({ cvId, template: templateProp }: CVEditorProps) {
     const { toast } = useToast()
     const [cvData, setCVData] = useState<CVData>({
         personalInfo: {
@@ -106,9 +106,21 @@ export function CvEditor({ cvId, template }: CVEditorProps) {
     const [selectedColor, setSelectedColor] = useState("#0066CC")
     const [selectedFont, setSelectedFont] = useState("Roboto")
     const [fontSize, setFontSize] = useState(14)
-    const [templateStyle, setTemplateStyle] = useState("modern")
+    const [template, setTemplate] = useState("modern")
     const [zoom, setZoom] = useState(100)
     const [language, setLanguage] = useState<"vi" | "en">("vi")
+    const [templateData, setTemplateData] = useState<ITemplate | null>(null)
+
+    // Load template data when templateProp changes
+    useEffect(() => {
+        if (templateProp) {
+            setTemplateData(templateProp)
+            // Extract color from template if available
+            if (templateProp.color) {
+                setSelectedColor(templateProp.color)
+            }
+        }
+    }, [templateProp])
 
     const [history, setHistory] = useState<HistoryState[]>([])
     const [historyIndex, setHistoryIndex] = useState(-1)
@@ -119,7 +131,7 @@ export function CvEditor({ cvId, template }: CVEditorProps) {
             selectedColor,
             selectedFont,
             fontSize,
-            templateStyle,
+            template,
         }
 
         if (historyIndex === -1 || JSON.stringify(newState) !== JSON.stringify(history[historyIndex])) {
@@ -131,7 +143,7 @@ export function CvEditor({ cvId, template }: CVEditorProps) {
             setHistory(newHistory)
             setHistoryIndex(newHistory.length - 1)
         }
-    }, [cvData, selectedColor, selectedFont, fontSize, templateStyle])
+    }, [cvData, selectedColor, selectedFont, fontSize, template])
 
     useEffect(() => {
         const savedData = localStorage.getItem(`cv-data-${cvId}`)
@@ -142,7 +154,7 @@ export function CvEditor({ cvId, template }: CVEditorProps) {
                 setSelectedColor(parsed.selectedColor)
                 setSelectedFont(parsed.selectedFont)
                 if (parsed.fontSize) setFontSize(parsed.fontSize)
-                if (parsed.templateStyle) setTemplateStyle(parsed.templateStyle)
+                if (parsed.template) setTemplate(parsed.template)
                 if (parsed.zoom) setZoom(parsed.zoom)
                 if (parsed.language) setLanguage(parsed.language)
                 toast({
@@ -153,8 +165,7 @@ export function CvEditor({ cvId, template }: CVEditorProps) {
                 console.error("[v0] Error loading saved CV data:", error)
             }
         }
-        // Template notification removed
-    }, [cvId, template, toast])
+    }, [cvId, toast])
 
     const handleUndo = () => {
         if (historyIndex > 0) {
@@ -163,7 +174,7 @@ export function CvEditor({ cvId, template }: CVEditorProps) {
             setSelectedColor(prevState.selectedColor)
             setSelectedFont(prevState.selectedFont)
             setFontSize(prevState.fontSize)
-            setTemplateStyle(prevState.templateStyle)
+            setTemplate(prevState.template)
             setHistoryIndex(historyIndex - 1)
             toast({
                 title: "Đã hoàn tác",
@@ -179,7 +190,7 @@ export function CvEditor({ cvId, template }: CVEditorProps) {
             setSelectedColor(nextState.selectedColor)
             setSelectedFont(nextState.selectedFont)
             setFontSize(nextState.fontSize)
-            setTemplateStyle(nextState.templateStyle)
+            setTemplate(nextState.template)
             setHistoryIndex(historyIndex + 1)
             toast({
                 title: "Đã làm lại",
@@ -195,7 +206,7 @@ export function CvEditor({ cvId, template }: CVEditorProps) {
                 selectedColor,
                 selectedFont,
                 fontSize,
-                templateStyle,
+                template,
                 zoom,
                 language,
                 lastSaved: new Date().toISOString(),
@@ -302,8 +313,8 @@ export function CvEditor({ cvId, template }: CVEditorProps) {
                     onFontChange={setSelectedFont}
                     fontSize={fontSize}
                     onFontSizeChange={setFontSize}
-                    template={templateStyle}
-                    onTemplateChange={setTemplateStyle}
+                    template={template}
+                    onTemplateChange={setTemplate}
                 />
 
                 <CVEditorCanvas
@@ -312,9 +323,10 @@ export function CvEditor({ cvId, template }: CVEditorProps) {
                     selectedColor={selectedColor}
                     selectedFont={selectedFont}
                     fontSize={fontSize}
-                    template={templateStyle}
+                    template={template}
                     zoom={zoom}
                     language={language}
+                    templateData={templateData}
                 />
             </div>
         </div>

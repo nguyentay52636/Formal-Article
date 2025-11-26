@@ -25,6 +25,7 @@ import {
 import { useRef } from "react"
 import type { CVData } from "../../CvEditor"
 import { cvTranslations } from "@/lib/cv-translations" // Import translations
+import { ITemplate } from "@/apis/templateApi"
 
 interface CVEditorPreviewProps {
     cvData: CVData
@@ -33,7 +34,8 @@ interface CVEditorPreviewProps {
     selectedFont: string
     fontSize: number
     template: string
-    language: "vi" | "en" // Add language prop
+    language: "vi" | "en"
+    templateData?: ITemplate | null
 }
 
 export function CVEditorPreview({
@@ -43,7 +45,8 @@ export function CVEditorPreview({
     selectedFont,
     fontSize,
     template,
-    language, // Destructure language prop
+    language,
+    templateData,
 }: CVEditorPreviewProps) {
     const fileInputRef = useRef<HTMLInputElement>(null)
 
