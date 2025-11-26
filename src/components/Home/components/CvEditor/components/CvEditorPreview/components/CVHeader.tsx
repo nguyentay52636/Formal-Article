@@ -1,0 +1,146 @@
+"use client"
+
+import type React from "react"
+import { useRef, useCallback, useMemo } from "react"
+import { Input } from "@/components/ui/input"
+import { Calendar, Mail, Phone, MapPin, User, Camera } from "lucide-react"
+import type { CVData } from "../../../CvEditor"
+
+interface CVHeaderProps {
+    cvData: CVData
+    setCVData: (data: CVData) => void
+    selectedColor: string
+    template: string
+    t: { placeholders: Record<string, string> }
+}
+
+export function CVHeader({ cvData, setCVData, selectedColor, template, t }: CVHeaderProps) {
+    const fileInputRef = useRef<HTMLInputElement>(null)
+
+    const headerStyle = useMemo(() => {
+        switch (template) {
+            case "classic": return { backgroundColor: "#333333", padding: "2rem" }
+            case "creative": return { background: `linear-gradient(135deg, ${selectedColor} 0%, ${selectedColor}dd 100%)`, padding: "2.5rem" }
+            case "minimal": return { backgroundColor: "#FFFFFF", borderBottom: `4px solid ${selectedColor}`, padding: "2rem" }
+            default: return { backgroundColor: selectedColor, padding: "2rem" }
+        }
+    }, [template, selectedColor])
+
+    const textColor = useMemo(() => template === "minimal" ? "#000000" : "#FFFFFF", [template])
+
+    const updatePersonalInfo = useCallback((field: string, value: string) => {
+        setCVData({ ...cvData, personalInfo: { ...cvData.personalInfo, [field]: value } })
+    }, [cvData, setCVData])
+
+    const handlePhotoUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (file) {
+            const reader = new FileReader()
+            reader.onloadend = () => {
+                setCVData({ ...cvData, personalInfo: { ...cvData.personalInfo, photo: reader.result as string } })
+            }
+            reader.readAsDataURL(file)
+        }
+    }, [cvData, setCVData])
+
+    return (
+        <div className="p-8 relative" style={headerStyle}>
+            <div className="flex gap-6 items-start">
+                {/* Avatar */}
+                <div className="w-32 h-32 bg-white rounded-full flex items-center justify-center shrink-0 overflow-hidden relative group cursor-pointer">
+                    <input ref={fileInputRef} type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
+                    {cvData.personalInfo.photo ? (
+                        <>
+                            <img src={cvData.personalInfo.photo || "/placeholder.svg"} alt="Profile" className="w-full h-full object-cover" />
+                            <div
+                                className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                                onClick={() => fileInputRef.current?.click()}
+                            >
+                                <Camera className="w-8 h-8 text-white" />
+                            </div>
+                        </>
+                    ) : (
+                        <div
+                            className="w-full h-full bg-gray-300 rounded-full flex flex-col items-center justify-center hover:bg-gray-400 transition-colors"
+                            onClick={() => fileInputRef.current?.click()}
+                        >
+                            <Camera className="w-8 h-8 text-gray-600" />
+                            <span className="text-xs text-gray-600 mt-1">{t.placeholders.addPhoto}</span>
+                        </div>
+                    )}
+                </div>
+
+                {/* Personal Info */}
+                <div className="flex-1 space-y-3">
+                    <Input
+                        value={cvData.personalInfo.fullName}
+                        onChange={(e) => updatePersonalInfo("fullName", e.target.value)}
+                        className="text-3xl font-bold bg-transparent border-none p-0 h-auto focus-visible:ring-0"
+                        style={{ color: textColor }}
+                        placeholder={t.placeholders.fullName}
+                    />
+                    <Input
+                        value={cvData.personalInfo.position}
+                        onChange={(e) => updatePersonalInfo("position", e.target.value)}
+                        className="text-lg bg-transparent border-none p-0 h-auto focus-visible:ring-0"
+                        style={{ color: textColor }}
+                        placeholder={t.placeholders.position}
+                    />
+                    <div className="grid grid-cols-2 gap-x-6 gap-y-2 mt-4 text-sm">
+                        <div className="flex items-center gap-2">
+                            <Calendar className="w-4 h-4 shrink-0" style={{ color: textColor }} />
+                            <Input
+                                value={cvData.personalInfo.birthDate}
+                                onChange={(e) => updatePersonalInfo("birthDate", e.target.value)}
+                                className="bg-transparent border-none p-0 h-auto focus-visible:ring-0 text-sm"
+                                style={{ color: textColor }}
+                                placeholder={t.placeholders.birthDate}
+                            />
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <User className="w-4 h-4 shrink-0" style={{ color: textColor }} />
+                            <Input
+                                value={cvData.personalInfo.gender}
+                                onChange={(e) => updatePersonalInfo("gender", e.target.value)}
+                                className="bg-transparent border-none p-0 h-auto focus-visible:ring-0 text-sm"
+                                style={{ color: textColor }}
+                                placeholder={t.placeholders.gender}
+                            />
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Mail className="w-4 h-4 shrink-0" style={{ color: textColor }} />
+                            <Input
+                                value={cvData.personalInfo.email}
+                                onChange={(e) => updatePersonalInfo("email", e.target.value)}
+                                className="bg-transparent border-none p-0 h-auto focus-visible:ring-0 text-sm"
+                                style={{ color: textColor }}
+                                placeholder={t.placeholders.email}
+                            />
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Phone className="w-4 h-4 shrink-0" style={{ color: textColor }} />
+                            <Input
+                                value={cvData.personalInfo.phone}
+                                onChange={(e) => updatePersonalInfo("phone", e.target.value)}
+                                className="bg-transparent border-none p-0 h-auto focus-visible:ring-0 text-sm"
+                                style={{ color: textColor }}
+                                placeholder={t.placeholders.phone}
+                            />
+                        </div>
+                        <div className="flex items-center gap-2 col-span-2">
+                            <MapPin className="w-4 h-4 shrink-0" style={{ color: textColor }} />
+                            <Input
+                                value={cvData.personalInfo.address}
+                                onChange={(e) => updatePersonalInfo("address", e.target.value)}
+                                className="bg-transparent border-none p-0 h-auto focus-visible:ring-0 text-sm"
+                                style={{ color: textColor }}
+                                placeholder={t.placeholders.address}
+                            />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    )
+}
+
