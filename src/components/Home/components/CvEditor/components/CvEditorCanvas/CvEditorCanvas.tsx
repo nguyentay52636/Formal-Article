@@ -2,6 +2,7 @@
 
 import { CVData } from "../../CvEditor"
 import { CVEditorPreview } from "../CvEditorPreview/CvEditorPreview"
+import { ITemplate } from "@/apis/templateApi"
 
 
 interface CVEditorCanvasProps {
@@ -12,7 +13,8 @@ interface CVEditorCanvasProps {
     fontSize: number
     template: string
     zoom: number
-    language: "vi" | "en" // Add language prop
+    language: "vi" | "en"
+    templateData?: ITemplate | null
 }
 
 export function CVEditorCanvas({
@@ -23,7 +25,8 @@ export function CVEditorCanvas({
     fontSize,
     template,
     zoom,
-    language, // Destructure language prop
+    language,
+    templateData,
 }: CVEditorCanvasProps) {
     return (
         <main className="flex-1 overflow-auto bg-[#2C2C2C] p-8">
@@ -39,6 +42,7 @@ export function CVEditorCanvas({
                     fontSize={fontSize}
                     template={template}
                     language={language}
+                    templateData={templateData}
                 />
             </div>
         </main>

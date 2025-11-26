@@ -21,6 +21,15 @@ export function CvDetailView({ cv }: CvDetailViewProps) {
     // Use the passed cv prop directly as it now contains the full details
     const displayCv = cv;
 
+    console.log('CvDetailView cv data:', {
+        id: displayCv.id,
+        name: displayCv.name,
+        hasHtml: !!displayCv.html,
+        hasCss: !!displayCv.css,
+        htmlLength: displayCv.html?.length,
+        cssLength: displayCv.css?.length
+    });
+
     return (
         <main className="container mx-auto px-4 py-8">
             <Breadcrumbs name={displayCv.name} />

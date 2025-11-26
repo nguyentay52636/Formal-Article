@@ -1,30 +1,40 @@
-import { getTemplateById } from "@/apis/templateApi"
-import { CvEditorWrapper } from "@/components/Home/components/CvEditor/CvEditorWrapper"
-import { notFound } from "next/navigation"
+"use client"
+import { useEffect, useState } from "react"
+import { useParams } from "next/navigation"
+import { CvEditor } from "@/components/Home/components/CvEditor/CvEditor"
+import { useTemplate } from "@/hooks/useTemplate"
+import { ITemplate } from "@/apis/templateApi"
+import { Loader2 } from "lucide-react"
 
-interface CVEditorPageProps {
-    params: Promise<{
-        id?: string
-    }>
-}
+export default function Page() {
+    const params = useParams()
+    const id = params?.id as string
+    const { getTemplateDetails, loading } = useTemplate()
+    const [template, setTemplate] = useState<ITemplate | null>(null)
 
-export default async function page({ params }: CVEditorPageProps) {
-    const { id }: { id?: string } = await params
+    useEffect(() => {
+        const fetchTemplate = async () => {
+            if (id) {
+                const templateData = await getTemplateDetails(Number(id))
+                if (templateData) {
+                    setTemplate(templateData)
+                }
+            }
+        }
+        fetchTemplate()
+    }, [id])
 
-    if (!id) {
-        notFound()
-    }
-
-    // Fetch template details from API
-    const template = await getTemplateById(Number(id))
-
-    if (!template) {
-        notFound()
+    if (loading || !template) {
+        return (
+            <div className="h-screen flex items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+        )
     }
 
     return (
         <div className="h-screen">
-            <CvEditorWrapper cvId={id} template={template} />
+            <CvEditor cvId={id || ""} template={template} />
         </div>
     )
 }

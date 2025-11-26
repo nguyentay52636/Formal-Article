@@ -1,28 +1,42 @@
-import { getTemplateById } from "@/apis/templateApi"
-import GeneratorCv from "@/components/Home/components/GeneratorCv/GeneratorCv"
+"use client"
+import { useEffect, useState } from "react"
+import { useParams } from "next/navigation"
+import { ITemplate } from "@/apis/templateApi"
+import { CvDetailView } from "@/components/Home/components/JobApplication/components/TabsApplications/components/CurriculumVitae/CvDetailView/CvDetailView"
 import { RelateCVs } from "@/components/Home/components/JobApplication/components/TabsApplications/components/CurriculumVitae/RelateCVs"
-import { notFound } from "next/navigation"
+import { useTemplate } from "@/hooks/useTemplate"
+import { Loader2 } from "lucide-react"
 
-interface CVDetailPageProps {
-    params: Promise<{
-        id: string
-    }>
-}
+export default function Page() {
+    const params = useParams()
+    const id = params?.id as string
+    const { getTemplateDetails, loading } = useTemplate()
+    const [cv, setCv] = useState<ITemplate | null>(null)
 
-export default async function page({ params }: CVDetailPageProps) {
-    const { id } = await params
+    useEffect(() => {
+        const fetchTemplate = async () => {
+            if (id) {
+                const templateData = await getTemplateDetails(Number(id))
+                if (templateData) {
+                    setCv(templateData)
+                }
+            }
+        }
+        fetchTemplate()
+    }, [id])
 
-    // Fetch template details from API
-    const cv = await getTemplateById(Number(id))
-
-    if (!cv) {
-        notFound()
+    if (loading || !cv) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+        )
     }
 
     return (
         <div className="min-h-screen bg-background">
-            <GeneratorCv cv={cv} />
-            <RelateCVs currentCvId={cv.id} />
+            <CvDetailView cv={cv} />
+            <RelateCVs currentCvId={cv.id.toString()} />
         </div>
     )
 }
