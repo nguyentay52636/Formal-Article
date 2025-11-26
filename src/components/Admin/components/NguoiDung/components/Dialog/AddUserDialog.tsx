@@ -206,7 +206,7 @@ export default function AddUserDialog({ onSuccess }: Props) {
                     Thêm người dùng
                 </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-w-5xl max-h-[100vh]! overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>Thêm người dùng mới</DialogTitle>
                     <DialogDescription>

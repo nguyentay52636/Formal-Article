@@ -22,7 +22,7 @@ import {
     Trash2,
     Camera,
 } from "lucide-react"
-import { useRef } from "react"
+import { useRef, useState, useEffect } from "react"
 import type { CVData } from "../../CvEditor"
 import { cvTranslations } from "@/lib/cv-translations" // Import translations
 import { ITemplate } from "@/apis/templateApi"
@@ -49,8 +49,123 @@ export function CVEditorPreview({
     templateData,
 }: CVEditorPreviewProps) {
     const fileInputRef = useRef<HTMLInputElement>(null)
+    const [mounted, setMounted] = useState(false)
+
+    useEffect(() => {
+        setMounted(true)
+    }, [])
 
     const t = cvTranslations[language]
+    const cvWrapperRef = useRef<HTMLDivElement>(null)
+    const [initialHtml, setInitialHtml] = useState<string>('')
+
+    // Check if we should render custom HTML template
+    const hasCustomTemplate = templateData?.html && templateData.html.trim().length > 0
+
+    // Function to add contenteditable to editable elements
+    const makeEditable = (html: string): string => {
+        return html
+            // Name and title
+            .replace(/<h1 class='name'>/g, "<h1 class='name' contenteditable='true'>")
+            .replace(/<h1 class="name">/g, "<h1 class=\"name\" contenteditable=\"true\">")
+            .replace(/<p class='title'>/g, "<p class='title' contenteditable='true'>")
+            .replace(/<p class="title">/g, "<p class=\"title\" contenteditable=\"true\">")
+            .replace(/<p class='intro'>/g, "<p class='intro' contenteditable='true'>")
+            .replace(/<p class="intro">/g, "<p class=\"intro\" contenteditable=\"true\">")
+            // Job info
+            .replace(/<p class='job-company'>/g, "<p class='job-company' contenteditable='true'>")
+            .replace(/<p class="job-company">/g, "<p class=\"job-company\" contenteditable=\"true\">")
+            .replace(/<p class='job-time'>/g, "<p class='job-time' contenteditable='true'>")
+            .replace(/<p class="job-time">/g, "<p class=\"job-time\" contenteditable=\"true\">")
+            // Education
+            .replace(/<p class='edu-title'>/g, "<p class='edu-title' contenteditable='true'>")
+            .replace(/<p class="edu-title">/g, "<p class=\"edu-title\" contenteditable=\"true\">")
+            // All list items
+            .replace(/<li>/g, "<li contenteditable='true'>")
+            // All paragraphs in sections (make them editable)
+            .replace(/<p>📧/g, "<p contenteditable='true'>📧")
+            .replace(/<p>📞/g, "<p contenteditable='true'>📞")
+            .replace(/<p>📍/g, "<p contenteditable='true'>📍")
+            .replace(/<p>🎂/g, "<p contenteditable='true'>🎂")
+            .replace(/<p>•/g, "<p contenteditable='true'>•")
+            // Generic content paragraphs
+            .replace(/<p><b>/g, "<p contenteditable='true'><b>")
+            .replace(/<p>Thời gian/g, "<p contenteditable='true'>Thời gian")
+    }
+
+    // Initialize HTML only once when template changes
+    useEffect(() => {
+        if (templateData?.html && !initialHtml) {
+            setInitialHtml(makeEditable(templateData.html))
+        }
+    }, [templateData?.html, initialHtml])
+
+    // Function to get current edited HTML (call this when saving/exporting)
+    const getEditedHtml = (): string => {
+        if (cvWrapperRef.current) {
+            return cvWrapperRef.current.innerHTML
+        }
+        return initialHtml
+    }
+
+    // If template has custom HTML/CSS, render it with editable content
+    if (hasCustomTemplate && mounted && initialHtml) {
+        return (
+            <Card
+                className="bg-white shadow-2xl overflow-hidden mx-auto"
+                style={{
+                    width: "21cm",
+                    minHeight: "29.7cm",
+                }}
+            >
+                {/* Inject CSS with editable styles */}
+                <style dangerouslySetInnerHTML={{
+                    __html: `
+                        .cv-template-wrapper {
+                            background: #ffffff;
+                            width: 100%;
+                            min-height: 29.7cm;
+                        }
+                        
+                        /* Editable element styles */
+                        [contenteditable="true"] {
+                            outline: none;
+                            transition: background-color 0.15s ease;
+                            border-radius: 3px;
+                            min-height: 1em;
+                        }
+                        [contenteditable="true"]:hover {
+                            background-color: rgba(18, 58, 99, 0.06);
+                            cursor: text;
+                        }
+                        [contenteditable="true"]:focus {
+                            background-color: rgba(18, 58, 99, 0.1);
+                            box-shadow: inset 0 0 0 1px rgba(18, 58, 99, 0.2);
+                        }
+                        
+                        /* Placeholder for empty editable elements */
+                        [contenteditable="true"]:empty::before {
+                            content: "Nhấp để nhập...";
+                            color: #aaa;
+                            font-style: italic;
+                            pointer-events: none;
+                        }
+                        
+                        /* Custom CV styles from template */
+                        ${templateData.css || ''}
+                    `
+                }} />
+
+                {/* Render editable HTML content - no re-render on input */}
+                <div
+                    ref={cvWrapperRef}
+                    className="cv-template-wrapper"
+                    dangerouslySetInnerHTML={{ __html: initialHtml }}
+                    suppressContentEditableWarning={true}
+                />
+            </Card>
+        )
+    }
 
     const updatePersonalInfo = (field: string, value: string) => {
         setCVData({

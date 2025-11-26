@@ -40,12 +40,28 @@ type Props = {
 
 export default function EditUserDialog({ open, onOpenChange, user, onSuccess }: Props) {
     const [loading, setLoading] = useState(false)
-    const [formData, setFormData] = useState({
-        hoTen: "",
-        email: "",
-        vaiTro: "doc_gia",
-        kichHoat: true,
-        matKhau: ""
+    const [uploading, setUploading] = useState(false)
+    const [roles, setRoles] = useState<IRole[]>([])
+
+    const {
+        register,
+        handleSubmit,
+        control,
+        watch,
+        reset,
+        setValue,
+        formState: { errors }
+    } = useForm<FormData>({
+        resolver: zodResolver(formSchema),
+        defaultValues: {
+            hoTen: "",
+            email: "",
+            vaiTro: "",
+            kichHoat: true,
+            phone: "",
+            avatar: "",
+            matKhau: ""
+        }
     })
 
     const avatarUrl = watch("avatar");
@@ -132,7 +148,7 @@ export default function EditUserDialog({ open, onOpenChange, user, onSuccess }: 
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-w-5xl! max-h-[100vh]! overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>Chỉnh sửa người dùng</DialogTitle>
                     <DialogDescription>
