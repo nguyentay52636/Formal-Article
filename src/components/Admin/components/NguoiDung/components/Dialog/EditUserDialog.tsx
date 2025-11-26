@@ -47,11 +47,14 @@ export default function EditUserDialog({ open, onOpenChange, user, onSuccess }: 
     }, [user])
 
     const handleChange = (field: string, value: any) => {
+        console.log(`🔄 Edit Field changed: ${field} = ${value}`);
         setFormData(prev => ({ ...prev, [field]: value }))
     }
 
     const handleSubmit = async () => {
         if (!user) return;
+
+        console.log("💾 Submitting update for user:", user.id);
 
         // Map role string to roleId
         const roleMap: Record<string, number> = {
@@ -70,17 +73,23 @@ export default function EditUserDialog({ open, onOpenChange, user, onSuccess }: 
             ...(formData.matKhau ? { password: formData.matKhau } : {})
         }
 
+        console.log("📦 Updated user data payload:", updatedUser);
+
         setLoading(true);
         try {
             const res = await updateUserApi(user.id, updatedUser);
+            console.log("✅ Update response:", res);
+
             if (res) {
                 toast.success("Cập nhật người dùng thành công");
                 onOpenChange(false);
+                console.log("🔄 Triggering refresh...");
                 onSuccess?.(); // Trigger parent refresh
             } else {
                 toast.error("Cập nhật người dùng thất bại");
             }
         } catch (error) {
+            console.error("❌ Update error:", error);
             toast.error("Cập nhật người dùng thất bại");
         } finally {
             setLoading(false);
@@ -104,6 +113,7 @@ export default function EditUserDialog({ open, onOpenChange, user, onSuccess }: 
                                 id="edit-hoTen"
                                 value={formData.hoTen}
                                 onChange={(e) => handleChange("hoTen", e.target.value)}
+                                autoComplete="off"
                             />
                         </div>
                         <div className="space-y-2">
@@ -113,6 +123,7 @@ export default function EditUserDialog({ open, onOpenChange, user, onSuccess }: 
                                 type="email"
                                 value={formData.email}
                                 onChange={(e) => handleChange("email", e.target.value)}
+                                autoComplete="off"
                             />
                         </div>
                     </div>
@@ -143,6 +154,7 @@ export default function EditUserDialog({ open, onOpenChange, user, onSuccess }: 
                             placeholder="Mật khẩu mới"
                             value={formData.matKhau}
                             onChange={(e) => handleChange("matKhau", e.target.value)}
+                            autoComplete="new-password"
                         />
                     </div>
 

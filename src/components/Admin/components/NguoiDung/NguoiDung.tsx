@@ -81,6 +81,7 @@ export default function NguoiDung() {
     const activeFiltersCount = [filterRole !== "all", filterStatus !== "all"].filter(Boolean).length
 
     const handleEdit = (user: IUser) => {
+        console.log("✏️ handleEdit clicked for user:", user);
         setSelectedUser(user)
         setIsEditDialogOpen(true)
     }
