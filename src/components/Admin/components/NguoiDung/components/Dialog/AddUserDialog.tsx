@@ -1,13 +1,13 @@
 "use client"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
 import { Plus } from "lucide-react"
-import { useUser } from "../../hooks/useUser"
+import { createUser } from "@/apis/userApi"
 import { toast } from "react-hot-toast"
 
 type Props = {
@@ -16,7 +16,7 @@ type Props = {
 
 export default function AddUserDialog({ onSuccess }: Props) {
     const [open, setOpen] = useState(false)
-    const { addUser } = useUser({ fetchOnMount: false })
+    const [loading, setLoading] = useState(false)
     const [formData, setFormData] = useState({
         hoTen: "",
         email: "",
@@ -27,8 +27,29 @@ export default function AddUserDialog({ onSuccess }: Props) {
     })
 
     const handleChange = (field: string, value: any) => {
+        console.log(`🔄 Field changed: ${field} = ${value}`);
         setFormData(prev => ({ ...prev, [field]: value }))
     }
+
+    // Reset form when dialog opens
+    useEffect(() => {
+        if (open) {
+            console.log("🔓 Dialog opened, resetting form");
+            setFormData({
+                hoTen: "",
+                email: "",
+                matKhau: "",
+                xacNhanMatKhau: "",
+                vaiTro: "doc_gia",
+                kichHoat: true
+            });
+        }
+    }, [open]);
+
+    // Log form data changes
+    useEffect(() => {
+        console.log("📝 Form data:", formData);
+    }, [formData]);
 
     const handleSubmit = async () => {
         if (!formData.hoTen || !formData.email || !formData.matKhau) {
@@ -60,18 +81,28 @@ export default function AddUserDialog({ onSuccess }: Props) {
             avatar: "" // Default
         }
 
-        const success = await addUser(newUser);
-        if (success) {
-            setOpen(false);
-            setFormData({
-                hoTen: "",
-                email: "",
-                matKhau: "",
-                xacNhanMatKhau: "",
-                vaiTro: "doc_gia",
-                kichHoat: true
-            });
-            onSuccess?.();
+        setLoading(true);
+        try {
+            const res = await createUser(newUser);
+            if (res) {
+                toast.success("Thêm người dùng thành công");
+                setOpen(false);
+                setFormData({
+                    hoTen: "",
+                    email: "",
+                    matKhau: "",
+                    xacNhanMatKhau: "",
+                    vaiTro: "doc_gia",
+                    kichHoat: true
+                });
+                onSuccess?.(); // Trigger parent refresh
+            } else {
+                toast.error("Thêm người dùng thất bại");
+            }
+        } catch (error) {
+            toast.error("Thêm người dùng thất bại");
+        } finally {
+            setLoading(false);
         }
     }
 
@@ -86,6 +117,9 @@ export default function AddUserDialog({ onSuccess }: Props) {
             <DialogContent className="max-w-2xl">
                 <DialogHeader>
                     <DialogTitle>Thêm người dùng mới</DialogTitle>
+                    <DialogDescription>
+                        Điền thông tin để tạo tài khoản người dùng mới
+                    </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
@@ -96,6 +130,7 @@ export default function AddUserDialog({ onSuccess }: Props) {
                                 placeholder="Nguyễn Văn A"
                                 value={formData.hoTen}
                                 onChange={(e) => handleChange("hoTen", e.target.value)}
+                                autoComplete="off"
                             />
                         </div>
                         <div className="space-y-2">
@@ -106,6 +141,7 @@ export default function AddUserDialog({ onSuccess }: Props) {
                                 placeholder="nguyenvana@example.com"
                                 value={formData.email}
                                 onChange={(e) => handleChange("email", e.target.value)}
+                                autoComplete="off"
                             />
                         </div>
                     </div>
@@ -119,6 +155,7 @@ export default function AddUserDialog({ onSuccess }: Props) {
                                 placeholder="••••••••"
                                 value={formData.matKhau}
                                 onChange={(e) => handleChange("matKhau", e.target.value)}
+                                autoComplete="new-password"
                             />
                         </div>
                         <div className="space-y-2">
@@ -129,6 +166,7 @@ export default function AddUserDialog({ onSuccess }: Props) {
                                 placeholder="••••••••"
                                 value={formData.xacNhanMatKhau}
                                 onChange={(e) => handleChange("xacNhanMatKhau", e.target.value)}
+                                autoComplete="new-password"
                             />
                         </div>
                     </div>
