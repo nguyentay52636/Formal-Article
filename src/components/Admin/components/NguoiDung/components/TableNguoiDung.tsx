@@ -16,10 +16,12 @@ type Props = {
 
 export default function TableNguoiDung({ users, roleColors, roleLabels, onEdit, onDelete }: Props) {
   const getRoleKey = (user: IUser): string => {
-    if (user.role?.name === 'admin') return 'quan_tri';
-    if (user.role?.name === 'editor') return 'bien_tap';
-    if (user.role?.name === 'author') return 'tac_gia';
-    return 'doc_gia';
+    const roleName = user.role?.name?.toLowerCase() || '';
+    if (roleName === 'admin' || roleName === 'quản trị viên') return 'quan_tri';
+    if (roleName === 'editor' || roleName === 'biên tập viên') return 'bien_tap';
+    if (roleName === 'author' || roleName === 'tác giả') return 'tac_gia';
+    if (roleName === 'user' || roleName === 'độc giả') return 'doc_gia';
+    return 'other'; // Return 'other' instead of default 'doc_gia' to handle unknown roles
   }
 
   return (
@@ -61,7 +63,7 @@ export default function TableNguoiDung({ users, roleColors, roleLabels, onEdit, 
                 <TableCell>
                   <Badge className={roleColors[roleKey] || "bg-muted text-muted-foreground"}>
                     <Shield className="mr-1 h-3 w-3" />
-                    {roleLabels[roleKey] || "Độc giả"}
+                    {roleLabels[roleKey] || user.role?.name || "Độc giả"}
                   </Badge>
                 </TableCell>
                 <TableCell>0</TableCell>
