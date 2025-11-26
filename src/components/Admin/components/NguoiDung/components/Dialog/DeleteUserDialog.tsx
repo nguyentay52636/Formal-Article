@@ -20,16 +20,18 @@ export default function DeleteUserDialog({ open, onOpenChange, user, onSuccess }
 
         setLoading(true)
         try {
-            const res = await deleteUserApi(user.id)
-            if (res) {
+            const success = await deleteUserApi(user.id)
+            if (success) {
                 toast.success("Xóa người dùng thành công")
                 onOpenChange(false)
                 onSuccess?.() // Trigger parent refresh
             } else {
                 toast.error("Xóa người dùng thất bại")
             }
-        } catch (error) {
-            toast.error("Xóa người dùng thất bại")
+        } catch (error: any) {
+            console.error("Error deleting user:", error)
+            const errorMessage = error.response?.data?.message || error.message || "Xóa người dùng thất bại"
+            toast.error(errorMessage)
         } finally {
             setLoading(false)
         }
