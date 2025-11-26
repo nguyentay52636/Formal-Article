@@ -31,16 +31,6 @@ export function CvDetailView({ cv }: CvDetailViewProps) {
     // Use templateDetails if available, otherwise fall back to initial cv prop
     const displayCv = templateDetails || cv;
 
-    console.log('JobApplication CvDetailView cv data:', {
-        id: displayCv.id,
-        name: displayCv.name,
-        hasHtml: !!displayCv.html,
-        hasCss: !!displayCv.css,
-        htmlLength: displayCv.html?.length,
-        cssLength: displayCv.css?.length,
-        usingTemplateDetails: !!templateDetails
-    });
-
     if (loading && !templateDetails) {
         return (
             <div className="flex items-center justify-center min-h-[50vh]">
@@ -60,8 +50,6 @@ export function CvDetailView({ cv }: CvDetailViewProps) {
                     <CvPreviewCard
                         title={displayCv.name}
                         previewImage={displayCv.previewUrl}
-                        html={displayCv.html}
-                        css={displayCv.css}
                     />
                     <CvTitleSection id={displayCv.id} title={displayCv.name} tag={displayCv.tag?.name} industry={displayCv.summary} />
                     {/* GIới thiêu về cv */}

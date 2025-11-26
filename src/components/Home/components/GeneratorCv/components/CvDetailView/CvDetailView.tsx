@@ -18,17 +18,7 @@ interface CvDetailViewProps {
 }
 
 export function CvDetailView({ cv }: CvDetailViewProps) {
-    // Use the passed cv prop directly as it now contains the full details
     const displayCv = cv;
-
-    console.log('CvDetailView cv data:', {
-        id: displayCv.id,
-        name: displayCv.name,
-        hasHtml: !!displayCv.html,
-        hasCss: !!displayCv.css,
-        htmlLength: displayCv.html?.length,
-        cssLength: displayCv.css?.length
-    });
 
     return (
         <main className="container mx-auto px-4 py-8">
@@ -41,10 +31,8 @@ export function CvDetailView({ cv }: CvDetailViewProps) {
                     <CvPreviewCard
                         title={displayCv.name}
                         previewImage={displayCv.previewUrl}
-                        html={displayCv.html}
-                        css={displayCv.css}
                     />
-                    <CvTitleSection id={displayCv.id} title={displayCv.name} tag={displayCv.tag?.name} industry={displayCv.summary} />
+                    <CvTitleSection id={Number(displayCv.id)} title={displayCv.name} tag={displayCv.tag?.name} industry={displayCv.summary} />
                     {/* GIới thiêu về cv */}
                     <CvDescriptionCard
                         description={displayCv.description}
