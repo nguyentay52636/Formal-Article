@@ -1,7 +1,9 @@
 "use client"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
 import { IUser } from "@/apis/types"
-import { useUser } from "../../hooks/useUser"
+import { deleteUser as deleteUserApi } from "@/apis/userApi"
+import { toast } from "react-hot-toast"
+import { useState } from "react"
 
 type Props = {
     open: boolean
@@ -11,14 +13,25 @@ type Props = {
 }
 
 export default function DeleteUserDialog({ open, onOpenChange, user, onSuccess }: Props) {
-    const { deleteUser } = useUser({ fetchOnMount: false })
+    const [loading, setLoading] = useState(false)
 
     const handleDelete = async () => {
-        if (!user) return;
-        const success = await deleteUser(user.id);
-        if (success) {
-            onOpenChange(false);
-            onSuccess?.();
+        if (!user) return
+
+        setLoading(true)
+        try {
+            const res = await deleteUserApi(user.id)
+            if (res) {
+                toast.success("Xóa người dùng thành công")
+                onOpenChange(false)
+                onSuccess?.() // Trigger parent refresh
+            } else {
+                toast.error("Xóa người dùng thất bại")
+            }
+        } catch (error) {
+            toast.error("Xóa người dùng thất bại")
+        } finally {
+            setLoading(false)
         }
     }
 
@@ -33,20 +46,19 @@ export default function DeleteUserDialog({ open, onOpenChange, user, onSuccess }
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                    <AlertDialogCancel>Hủy</AlertDialogCancel>
+                    <AlertDialogCancel disabled={loading}>Hủy</AlertDialogCancel>
                     <AlertDialogAction
                         className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        disabled={loading}
                         onClick={(e) => {
                             e.preventDefault(); // Prevent auto close
                             handleDelete();
                         }}
                     >
-                        Xóa
+                        {loading ? "Đang xóa..." : "Xóa"}
                     </AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>
     )
 }
-
-

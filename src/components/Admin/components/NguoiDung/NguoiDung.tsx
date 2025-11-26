@@ -9,7 +9,7 @@ import FilterPanel from "./components/FilterPanel"
 import AddUserDialog from "./components/Dialog/AddUserDialog"
 import EditUserDialog from "./components/Dialog/EditUserDialog"
 import DeleteUserDialog from "./components/Dialog/DeleteUserDialog"
-import { PaginationProvider } from "@/context/PaginationProvider"
+import { PaginationProvider, usePaginateArray } from "@/context/PaginationProvider"
 import PaginationNguoiDung from "./components/PaginationNguoiDung"
 import { useUser } from "./hooks/useUser"
 import { IUser } from "@/apis/types"
@@ -28,6 +28,35 @@ const roleLabels: Record<string, string> = {
     doc_gia: "Độc giả",
 }
 
+// Component to handle paginated table display
+function TableContent({ filteredUsers, roleColors, roleLabels, onEdit, onDelete }: {
+    filteredUsers: IUser[]
+    roleColors: Record<string, string>
+    roleLabels: Record<string, string>
+    onEdit: (user: IUser) => void
+    onDelete: (user: IUser) => void
+}) {
+    const paginatedUsers = usePaginateArray(filteredUsers)
+
+    console.log("🔍 TableContent render:");
+    console.log("  - Total filtered users:", filteredUsers.length);
+    console.log("  - Paginated users:", paginatedUsers.length);
+    console.log("  - Paginated users data:", paginatedUsers);
+
+    return (
+        <>
+            <TableNguoiDung
+                users={paginatedUsers}
+                roleColors={roleColors}
+                roleLabels={roleLabels}
+                onEdit={onEdit}
+                onDelete={onDelete}
+            />
+            <PaginationNguoiDung users={filteredUsers} />
+        </>
+    )
+}
+
 export default function NguoiDung() {
     const { users, refresh } = useUser()
     const [searchQuery, setSearchQuery] = useState("")
@@ -39,6 +68,10 @@ export default function NguoiDung() {
     const [filterStatus, setFilterStatus] = useState<string>("all")
     const [showFilters, setShowFilters] = useState(false)
 
+    console.log("🎯 NguoiDung component render:");
+    console.log("  - Total users from hook:", users.length);
+    console.log("  - Users data:", users);
+
     const clearFilters = () => {
         setFilterRole("all")
         setFilterStatus("all")
@@ -48,6 +81,7 @@ export default function NguoiDung() {
     const activeFiltersCount = [filterRole !== "all", filterStatus !== "all"].filter(Boolean).length
 
     const handleEdit = (user: IUser) => {
+        console.log("✏️ handleEdit clicked for user:", user);
         setSelectedUser(user)
         setIsEditDialogOpen(true)
     }
@@ -80,6 +114,8 @@ export default function NguoiDung() {
         })
     }, [users, searchQuery, filterRole, filterStatus])
 
+    console.log("🔎 Filtered users:", filteredUsers.length);
+
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
@@ -111,17 +147,14 @@ export default function NguoiDung() {
                 />
             )}
 
-            <TableNguoiDung
-                users={filteredUsers}
-                roleColors={roleColors}
-                roleLabels={roleLabels}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-            />
-
-            <PaginationProvider total={users.length} initialPageSize={5}>
-                {/* PaginationNguoiDung might need updates if it uses UserItem, but for now assuming it accepts any[] or we need to check it */}
-                <PaginationNguoiDung users={filteredUsers} />
+            <PaginationProvider total={filteredUsers.length} initialPageSize={10}>
+                <TableContent
+                    filteredUsers={filteredUsers}
+                    roleColors={roleColors}
+                    roleLabels={roleLabels}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                />
             </PaginationProvider>
 
 

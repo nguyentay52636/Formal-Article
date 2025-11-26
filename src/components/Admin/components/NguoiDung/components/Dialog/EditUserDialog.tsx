@@ -1,12 +1,12 @@
 "use client"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
 import { Button } from "@/components/ui/button"
 import { useEffect, useState } from "react"
-import { useUser } from "../../hooks/useUser"
+import { updateUser as updateUserApi } from "@/apis/userApi"
 import { toast } from "react-hot-toast"
 import { IUser } from "@/apis/types"
 
@@ -18,7 +18,7 @@ type Props = {
 }
 
 export default function EditUserDialog({ open, onOpenChange, user, onSuccess }: Props) {
-    const { updateUser } = useUser({ fetchOnMount: false })
+    const [loading, setLoading] = useState(false)
     const [formData, setFormData] = useState({
         hoTen: "",
         email: "",
@@ -47,11 +47,14 @@ export default function EditUserDialog({ open, onOpenChange, user, onSuccess }: 
     }, [user])
 
     const handleChange = (field: string, value: any) => {
+        console.log(`🔄 Edit Field changed: ${field} = ${value}`);
         setFormData(prev => ({ ...prev, [field]: value }))
     }
 
     const handleSubmit = async () => {
         if (!user) return;
+
+        console.log("💾 Submitting update for user:", user.id);
 
         // Map role string to roleId
         const roleMap: Record<string, number> = {
@@ -70,10 +73,26 @@ export default function EditUserDialog({ open, onOpenChange, user, onSuccess }: 
             ...(formData.matKhau ? { password: formData.matKhau } : {})
         }
 
-        const success = await updateUser(user.id, updatedUser);
-        if (success) {
-            onOpenChange(false);
-            onSuccess?.();
+        console.log("📦 Updated user data payload:", updatedUser);
+
+        setLoading(true);
+        try {
+            const res = await updateUserApi(user.id, updatedUser);
+            console.log("✅ Update response:", res);
+
+            if (res) {
+                toast.success("Cập nhật người dùng thành công");
+                onOpenChange(false);
+                console.log("🔄 Triggering refresh...");
+                onSuccess?.(); // Trigger parent refresh
+            } else {
+                toast.error("Cập nhật người dùng thất bại");
+            }
+        } catch (error) {
+            console.error("❌ Update error:", error);
+            toast.error("Cập nhật người dùng thất bại");
+        } finally {
+            setLoading(false);
         }
     }
 
@@ -82,6 +101,9 @@ export default function EditUserDialog({ open, onOpenChange, user, onSuccess }: 
             <DialogContent className="max-w-2xl">
                 <DialogHeader>
                     <DialogTitle>Chỉnh sửa người dùng</DialogTitle>
+                    <DialogDescription>
+                        Cập nhật thông tin tài khoản người dùng
+                    </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
@@ -91,6 +113,7 @@ export default function EditUserDialog({ open, onOpenChange, user, onSuccess }: 
                                 id="edit-hoTen"
                                 value={formData.hoTen}
                                 onChange={(e) => handleChange("hoTen", e.target.value)}
+                                autoComplete="off"
                             />
                         </div>
                         <div className="space-y-2">
@@ -100,6 +123,7 @@ export default function EditUserDialog({ open, onOpenChange, user, onSuccess }: 
                                 type="email"
                                 value={formData.email}
                                 onChange={(e) => handleChange("email", e.target.value)}
+                                autoComplete="off"
                             />
                         </div>
                     </div>
@@ -130,6 +154,7 @@ export default function EditUserDialog({ open, onOpenChange, user, onSuccess }: 
                             placeholder="Mật khẩu mới"
                             value={formData.matKhau}
                             onChange={(e) => handleChange("matKhau", e.target.value)}
+                            autoComplete="new-password"
                         />
                     </div>
 
