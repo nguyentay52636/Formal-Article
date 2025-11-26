@@ -1,12 +1,12 @@
 "use client"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
 import { Button } from "@/components/ui/button"
 import { useEffect, useState } from "react"
-import { useUser } from "../../hooks/useUser"
+import { updateUser as updateUserApi } from "@/apis/userApi"
 import { toast } from "react-hot-toast"
 import { IUser } from "@/apis/types"
 
@@ -18,7 +18,7 @@ type Props = {
 }
 
 export default function EditUserDialog({ open, onOpenChange, user, onSuccess }: Props) {
-    const { updateUser } = useUser({ fetchOnMount: false })
+    const [loading, setLoading] = useState(false)
     const [formData, setFormData] = useState({
         hoTen: "",
         email: "",
@@ -70,10 +70,20 @@ export default function EditUserDialog({ open, onOpenChange, user, onSuccess }: 
             ...(formData.matKhau ? { password: formData.matKhau } : {})
         }
 
-        const success = await updateUser(user.id, updatedUser);
-        if (success) {
-            onOpenChange(false);
-            onSuccess?.();
+        setLoading(true);
+        try {
+            const res = await updateUserApi(user.id, updatedUser);
+            if (res) {
+                toast.success("Cập nhật người dùng thành công");
+                onOpenChange(false);
+                onSuccess?.(); // Trigger parent refresh
+            } else {
+                toast.error("Cập nhật người dùng thất bại");
+            }
+        } catch (error) {
+            toast.error("Cập nhật người dùng thất bại");
+        } finally {
+            setLoading(false);
         }
     }
 
@@ -82,6 +92,9 @@ export default function EditUserDialog({ open, onOpenChange, user, onSuccess }: 
             <DialogContent className="max-w-2xl">
                 <DialogHeader>
                     <DialogTitle>Chỉnh sửa người dùng</DialogTitle>
+                    <DialogDescription>
+                        Cập nhật thông tin tài khoản người dùng
+                    </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">

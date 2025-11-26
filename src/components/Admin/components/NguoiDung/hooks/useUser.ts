@@ -1,7 +1,6 @@
 import { IUser } from "@/apis/types";
-import { createUser, deleteUser as deleteUserApi, getAllUsers, updateUser as updateUserApi } from "@/apis/userApi";
+import { getAllUsers } from "@/apis/userApi";
 import { useEffect, useState } from "react";
-import { toast } from "react-hot-toast";
 
 export const useUser = (options?: { fetchOnMount?: boolean }) => {
     const { fetchOnMount = true } = options || {};
@@ -13,63 +12,24 @@ export const useUser = (options?: { fetchOnMount?: boolean }) => {
         setLoading(true);
         try {
             const response = await getAllUsers();
-            setUsers(response);
+
+            // Check if response has a data property (common API pattern)
+            let usersList = response;
+            if (response && typeof response === 'object' && 'data' in response) {
+                usersList = response.data;
+            }
+
+            // Ensure usersList is an array
+            if (Array.isArray(usersList)) {
+                setUsers(usersList);
+            } else {
+                console.error("getAllUsers did not return an array:", response);
+                setUsers([]);
+            }
         } catch (error) {
+            console.error("Error in getUsers:", error);
             setError(error as string);
-        } finally {
-            setLoading(false);
-        }
-    }
-
-    const addUser = async (user: IUser) => {
-        setLoading(true);
-        try {
-            const res = await createUser(user);
-            if (res) {
-                toast.success("Thêm người dùng thành công");
-                if (fetchOnMount) getUsers(); // Refresh if we are managing the list
-                return true;
-            }
-            return false;
-        } catch (error) {
-            toast.error("Thêm người dùng thất bại");
-            return false;
-        } finally {
-            setLoading(false);
-        }
-    }
-
-    const updateUser = async (id: number, user: IUser) => {
-        setLoading(true);
-        try {
-            const res = await updateUserApi(id, user);
-            if (res) {
-                toast.success("Cập nhật người dùng thành công");
-                if (fetchOnMount) getUsers();
-                return true;
-            }
-            return false;
-        } catch (error) {
-            toast.error("Cập nhật người dùng thất bại");
-            return false;
-        } finally {
-            setLoading(false);
-        }
-    }
-
-    const deleteUser = async (id: number) => {
-        setLoading(true);
-        try {
-            const res = await deleteUserApi(id);
-            if (res) {
-                toast.success("Xóa người dùng thành công");
-                if (fetchOnMount) getUsers();
-                return true;
-            }
-            return false;
-        } catch (error) {
-            toast.error("Xóa người dùng thất bại");
-            return false;
+            setUsers([]);
         } finally {
             setLoading(false);
         }
@@ -81,5 +41,5 @@ export const useUser = (options?: { fetchOnMount?: boolean }) => {
         }
     }, [fetchOnMount]);
 
-    return { users, loading, error, refresh: getUsers, addUser, updateUser, deleteUser };
+    return { users, loading, error, refresh: getUsers };
 }
