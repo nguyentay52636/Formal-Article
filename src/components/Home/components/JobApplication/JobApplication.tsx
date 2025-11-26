@@ -1,7 +1,6 @@
 "use client"
 import React from 'react'
 import TieuDeDonXinViec from './components/TitleJobApplication'
-import { TabsApplications } from './components/TabsApplications/TabsApplications'
 import { JobApplicationFilter } from './components/TabsApplications/components/JobApplicationFilter'
 import JobApplicationList from './components/TabsApplications/components/Job/JobApplicationList'
 import TagCv from './components/TagCv/TagCv'
@@ -16,7 +15,6 @@ export default function JobApplication() {
                     </div>
                     <TagCv />
                     <JobApplicationFilter />
-                    <TabsApplications />
                     <JobApplicationList />
                 </main>
             </div>

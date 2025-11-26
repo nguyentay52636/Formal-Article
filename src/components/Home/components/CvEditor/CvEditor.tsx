@@ -6,9 +6,11 @@ import { useToast } from "@/hooks/use-toast"
 import { CvEditorHeader } from "./components/CvEditorHeader/CvEditorHeader"
 import { CVEditorSidebar } from "./components/CvEditorSiderBar/CvEditorSiderBar"
 import { CVEditorCanvas } from "./components/CvEditorCanvas/CvEditorCanvas"
+import { ITemplate } from "@/apis/templateApi"
 
 interface CVEditorProps {
     cvId: string
+    template?: ITemplate
 }
 
 export interface CVData {
@@ -61,10 +63,10 @@ interface HistoryState {
     selectedColor: string
     selectedFont: string
     fontSize: number
-    template: string
+    templateStyle: string
 }
 
-export function CvEditor({ cvId }: CVEditorProps) {
+export function CvEditor({ cvId, template }: CVEditorProps) {
     const { toast } = useToast()
     const [cvData, setCVData] = useState<CVData>({
         personalInfo: {
@@ -104,7 +106,7 @@ export function CvEditor({ cvId }: CVEditorProps) {
     const [selectedColor, setSelectedColor] = useState("#0066CC")
     const [selectedFont, setSelectedFont] = useState("Roboto")
     const [fontSize, setFontSize] = useState(14)
-    const [template, setTemplate] = useState("modern")
+    const [templateStyle, setTemplateStyle] = useState("modern")
     const [zoom, setZoom] = useState(100)
     const [language, setLanguage] = useState<"vi" | "en">("vi")
 
@@ -117,7 +119,7 @@ export function CvEditor({ cvId }: CVEditorProps) {
             selectedColor,
             selectedFont,
             fontSize,
-            template,
+            templateStyle,
         }
 
         if (historyIndex === -1 || JSON.stringify(newState) !== JSON.stringify(history[historyIndex])) {
@@ -129,7 +131,7 @@ export function CvEditor({ cvId }: CVEditorProps) {
             setHistory(newHistory)
             setHistoryIndex(newHistory.length - 1)
         }
-    }, [cvData, selectedColor, selectedFont, fontSize, template])
+    }, [cvData, selectedColor, selectedFont, fontSize, templateStyle])
 
     useEffect(() => {
         const savedData = localStorage.getItem(`cv-data-${cvId}`)
@@ -140,7 +142,7 @@ export function CvEditor({ cvId }: CVEditorProps) {
                 setSelectedColor(parsed.selectedColor)
                 setSelectedFont(parsed.selectedFont)
                 if (parsed.fontSize) setFontSize(parsed.fontSize)
-                if (parsed.template) setTemplate(parsed.template)
+                if (parsed.templateStyle) setTemplateStyle(parsed.templateStyle)
                 if (parsed.zoom) setZoom(parsed.zoom)
                 if (parsed.language) setLanguage(parsed.language)
                 toast({
@@ -151,7 +153,8 @@ export function CvEditor({ cvId }: CVEditorProps) {
                 console.error("[v0] Error loading saved CV data:", error)
             }
         }
-    }, [cvId, toast])
+        // Template notification removed
+    }, [cvId, template, toast])
 
     const handleUndo = () => {
         if (historyIndex > 0) {
@@ -160,7 +163,7 @@ export function CvEditor({ cvId }: CVEditorProps) {
             setSelectedColor(prevState.selectedColor)
             setSelectedFont(prevState.selectedFont)
             setFontSize(prevState.fontSize)
-            setTemplate(prevState.template)
+            setTemplateStyle(prevState.templateStyle)
             setHistoryIndex(historyIndex - 1)
             toast({
                 title: "Đã hoàn tác",
@@ -176,7 +179,7 @@ export function CvEditor({ cvId }: CVEditorProps) {
             setSelectedColor(nextState.selectedColor)
             setSelectedFont(nextState.selectedFont)
             setFontSize(nextState.fontSize)
-            setTemplate(nextState.template)
+            setTemplateStyle(nextState.templateStyle)
             setHistoryIndex(historyIndex + 1)
             toast({
                 title: "Đã làm lại",
@@ -192,7 +195,7 @@ export function CvEditor({ cvId }: CVEditorProps) {
                 selectedColor,
                 selectedFont,
                 fontSize,
-                template,
+                templateStyle,
                 zoom,
                 language,
                 lastSaved: new Date().toISOString(),
@@ -299,8 +302,8 @@ export function CvEditor({ cvId }: CVEditorProps) {
                     onFontChange={setSelectedFont}
                     fontSize={fontSize}
                     onFontSizeChange={setFontSize}
-                    template={template}
-                    onTemplateChange={setTemplate}
+                    template={templateStyle}
+                    onTemplateChange={setTemplateStyle}
                 />
 
                 <CVEditorCanvas
@@ -309,7 +312,7 @@ export function CvEditor({ cvId }: CVEditorProps) {
                     selectedColor={selectedColor}
                     selectedFont={selectedFont}
                     fontSize={fontSize}
-                    template={template}
+                    template={templateStyle}
                     zoom={zoom}
                     language={language}
                 />
