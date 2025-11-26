@@ -40,6 +40,7 @@ type Props = {
 
 export default function EditUserDialog({ open, onOpenChange, user, onSuccess }: Props) {
     const [loading, setLoading] = useState(false)
+<<<<<<< HEAD
     const [uploading, setUploading] = useState(false)
     const [roles, setRoles] = useState<IRole[]>([])
 
@@ -63,6 +64,14 @@ export default function EditUserDialog({ open, onOpenChange, user, onSuccess }: 
             phone: "",
             avatar: ""
         }
+=======
+    const [formData, setFormData] = useState({
+        hoTen: "",
+        email: "",
+        vaiTro: "doc_gia",
+        kichHoat: true,
+        matKhau: ""
+>>>>>>> 28409b7 (feat: Sửa lại load user, khi thêm user thì vẫn trả đủ danh sách user)
     })
 
     const avatarUrl = watch("avatar");
@@ -136,6 +145,7 @@ export default function EditUserDialog({ open, onOpenChange, user, onSuccess }: 
             if (res) {
                 toast.success("Cập nhật người dùng thành công");
                 onOpenChange(false);
+<<<<<<< HEAD
                 onSuccess?.();
             } else {
                 toast.error("Cập nhật người dùng thất bại");
@@ -189,6 +199,14 @@ export default function EditUserDialog({ open, onOpenChange, user, onSuccess }: 
             } else {
                 toast.error("Cập nhật người dùng thất bại");
             }
+=======
+                onSuccess?.(); // Trigger parent refresh
+            } else {
+                toast.error("Cập nhật người dùng thất bại");
+            }
+        } catch (error) {
+            toast.error("Cập nhật người dùng thất bại");
+>>>>>>> 28409b7 (feat: Sửa lại load user, khi thêm user thì vẫn trả đủ danh sách user)
         } finally {
             setLoading(false);
         }
