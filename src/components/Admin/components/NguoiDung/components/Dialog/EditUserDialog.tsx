@@ -40,7 +40,6 @@ type Props = {
 
 export default function EditUserDialog({ open, onOpenChange, user, onSuccess }: Props) {
     const [loading, setLoading] = useState(false)
-<<<<<<< HEAD
     const [uploading, setUploading] = useState(false)
     const [roles, setRoles] = useState<IRole[]>([])
 
@@ -48,11 +47,10 @@ export default function EditUserDialog({ open, onOpenChange, user, onSuccess }: 
         register,
         handleSubmit,
         control,
+        watch,
         reset,
         setValue,
-        watch,
-        setError,
-        formState: { errors },
+        formState: { errors }
     } = useForm<FormData>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -60,18 +58,10 @@ export default function EditUserDialog({ open, onOpenChange, user, onSuccess }: 
             email: "",
             vaiTro: "",
             kichHoat: true,
-            matKhau: "",
             phone: "",
-            avatar: ""
+            avatar: "",
+            matKhau: ""
         }
-=======
-    const [formData, setFormData] = useState({
-        hoTen: "",
-        email: "",
-        vaiTro: "doc_gia",
-        kichHoat: true,
-        matKhau: ""
->>>>>>> 28409b7 (feat: Sửa lại load user, khi thêm user thì vẫn trả đủ danh sách user)
     })
 
     const avatarUrl = watch("avatar");
@@ -145,68 +135,12 @@ export default function EditUserDialog({ open, onOpenChange, user, onSuccess }: 
             if (res) {
                 toast.success("Cập nhật người dùng thành công");
                 onOpenChange(false);
-<<<<<<< HEAD
-                onSuccess?.();
-            } else {
-                toast.error("Cập nhật người dùng thất bại");
-            }
-        } catch (error: any) {
-            console.error("Update user error:", error);
-            console.log("❌ Server Error Data:", error.response?.data);
-
-            if (error.response && error.response.data) {
-                const errorData = error.response.data;
-
-                // Case 1: Error is a string
-                if (typeof errorData === 'string') {
-                    if (errorData.toLowerCase().includes("email")) {
-                        setError("email", { type: "manual", message: errorData });
-                    } else if (errorData.toLowerCase().includes("phone")) {
-                        setError("phone", { type: "manual", message: errorData });
-                    } else {
-                        toast.error("Lỗi: " + errorData);
-                    }
-                }
-                // Case 2: Error is an object with 'message' property
-                else if (errorData.message) {
-                    if (typeof errorData.message === 'string') {
-                        if (errorData.message.toLowerCase().includes("email")) {
-                            setError("email", { type: "manual", message: errorData.message });
-                        } else if (errorData.message.toLowerCase().includes("phone")) {
-                            setError("phone", { type: "manual", message: errorData.message });
-                        } else {
-                            toast.error("Lỗi: " + errorData.message);
-                        }
-                    } else {
-                        toast.error("Cập nhật thất bại");
-                    }
-                }
-                // Case 3: Error is an object with field keys
-                else {
-                    let handled = false;
-                    if (errorData.email) {
-                        setError("email", { type: "manual", message: errorData.email });
-                        handled = true;
-                    }
-                    if (errorData.phone) {
-                        setError("phone", { type: "manual", message: errorData.phone });
-                        handled = true;
-                    }
-                    if (!handled) {
-                        toast.error("Cập nhật thất bại: " + JSON.stringify(errorData));
-                    }
-                }
-            } else {
-                toast.error("Cập nhật người dùng thất bại");
-            }
-=======
                 onSuccess?.(); // Trigger parent refresh
             } else {
                 toast.error("Cập nhật người dùng thất bại");
             }
         } catch (error) {
             toast.error("Cập nhật người dùng thất bại");
->>>>>>> 28409b7 (feat: Sửa lại load user, khi thêm user thì vẫn trả đủ danh sách user)
         } finally {
             setLoading(false);
         }
@@ -214,7 +148,7 @@ export default function EditUserDialog({ open, onOpenChange, user, onSuccess }: 
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-w-5xl! max-h-[100vh]! overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>Chỉnh sửa người dùng</DialogTitle>
                     <DialogDescription>

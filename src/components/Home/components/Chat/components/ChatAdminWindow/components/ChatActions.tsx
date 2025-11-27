@@ -12,7 +12,7 @@ interface ChatActionsProps {
     isDisabled?: boolean
 }
 
-export default function ChatActions({ onContactAdmin, onVoiceCall, onVideoCall, isDisabled }: ChatActionsProps) {
+export default function ChatActions({ onContactAdmin, onVoiceCall, isDisabled }: ChatActionsProps) {
     const [showCallOptions, setShowCallOptions] = useState(false)
 
     return (
@@ -28,24 +28,12 @@ export default function ChatActions({ onContactAdmin, onVoiceCall, onVideoCall, 
                     <Headphones className="h-3 w-3 mr-2" />
                     Liên hệ admin
                 </Button>
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowCallOptions((prev) => !prev)}
-                    className="flex-1 text-xs"
-                >
-                    <Phone className="h-3 w-3 mr-2" />
-                    Gọi admin
-                </Button>
+
             </div>
             <CallOptions
                 isOpen={showCallOptions}
                 onVoiceCall={() => {
                     onVoiceCall()
-                    setShowCallOptions(false)
-                }}
-                onVideoCall={() => {
-                    onVideoCall()
                     setShowCallOptions(false)
                 }}
             />

@@ -7,6 +7,17 @@ import { CvEditorHeader } from "./components/CvEditorHeader/CvEditorHeader"
 import { CVEditorSidebar } from "./components/CvEditorSiderBar/CvEditorSiderBar"
 import { CVEditorCanvas } from "./components/CvEditorCanvas/CvEditorCanvas"
 import { ITemplate } from "@/apis/templateApi"
+import {
+    LayoutType,
+    Section,
+    ColorSettings,
+    SpacingSettings,
+    IconStyle,
+    DEFAULT_SECTIONS,
+    DEFAULT_COLORS,
+    DEFAULT_SPACING,
+    EditorSettings
+} from "./types/editor-settings"
 
 interface CVEditorProps {
     cvId: string
@@ -56,6 +67,19 @@ export interface CVData {
         company: string
         contact: string
     }>
+    // New sections
+    projects?: Array<{
+        id: string
+        name: string
+        description: string
+        link?: string
+    }>
+    certificates?: Array<{
+        id: string
+        name: string
+        issuer: string
+        date: string
+    }>
 }
 
 interface HistoryState {
@@ -64,6 +88,7 @@ interface HistoryState {
     selectedFont: string
     fontSize: number
     template: string
+    editorSettings: EditorSettings
 }
 
 export function CvEditor({ cvId, template: templateProp }: CVEditorProps) {
@@ -101,8 +126,11 @@ export function CvEditor({ cvId, template: templateProp }: CVEditorProps) {
         skills: [],
         interests: [],
         references: [],
+        projects: [],
+        certificates: [],
     })
 
+    // Basic settings
     const [selectedColor, setSelectedColor] = useState("#0066CC")
     const [selectedFont, setSelectedFont] = useState("Roboto")
     const [fontSize, setFontSize] = useState(14)
@@ -111,19 +139,58 @@ export function CvEditor({ cvId, template: templateProp }: CVEditorProps) {
     const [language, setLanguage] = useState<"vi" | "en">("vi")
     const [templateData, setTemplateData] = useState<ITemplate | null>(null)
 
+    // PRO settings
+    const [layout, setLayout] = useState<LayoutType>('two-column-left-wide')
+    const [sections, setSections] = useState<Section[]>(DEFAULT_SECTIONS)
+    const [colors, setColors] = useState<ColorSettings>(DEFAULT_COLORS)
+    const [spacing, setSpacing] = useState<SpacingSettings>(DEFAULT_SPACING)
+    const [iconStyle, setIconStyle] = useState<IconStyle>('minimal')
+
+    // Sync primary color with advanced colors
+    const handleColorChange = (color: string) => {
+        setSelectedColor(color)
+        setColors(prev => ({ ...prev, primary: color, heading: color }))
+    }
+
+    const handleColorsChange = (newColors: ColorSettings) => {
+        setColors(newColors)
+        setSelectedColor(newColors.primary)
+    }
+
+    // Handle cropped image
+    const handleImageCropped = (croppedImage: string) => {
+        setCVData(prev => ({
+            ...prev,
+            personalInfo: { ...prev.personalInfo, photo: croppedImage }
+        }))
+        toast({
+            title: "Đã cập nhật ảnh",
+            description: "Ảnh đại diện đã được cập nhật thành công",
+        })
+    }
+
     // Load template data when templateProp changes
     useEffect(() => {
         if (templateProp) {
             setTemplateData(templateProp)
-            // Extract color from template if available
             if (templateProp.color) {
                 setSelectedColor(templateProp.color)
+                setColors(prev => ({ ...prev, primary: templateProp.color!, heading: templateProp.color! }))
             }
         }
     }, [templateProp])
 
+    // History for undo/redo
     const [history, setHistory] = useState<HistoryState[]>([])
     const [historyIndex, setHistoryIndex] = useState(-1)
+
+    const currentEditorSettings: EditorSettings = {
+        layout,
+        sections,
+        colors,
+        spacing,
+        iconStyle,
+    }
 
     useEffect(() => {
         const newState: HistoryState = {
@@ -132,6 +199,7 @@ export function CvEditor({ cvId, template: templateProp }: CVEditorProps) {
             selectedFont,
             fontSize,
             template,
+            editorSettings: currentEditorSettings,
         }
 
         if (historyIndex === -1 || JSON.stringify(newState) !== JSON.stringify(history[historyIndex])) {
@@ -143,8 +211,9 @@ export function CvEditor({ cvId, template: templateProp }: CVEditorProps) {
             setHistory(newHistory)
             setHistoryIndex(newHistory.length - 1)
         }
-    }, [cvData, selectedColor, selectedFont, fontSize, template])
+    }, [cvData, selectedColor, selectedFont, fontSize, template, layout, sections, colors, spacing, iconStyle])
 
+    // Load saved data
     useEffect(() => {
         const savedData = localStorage.getItem(`cv-data-${cvId}`)
         if (savedData) {
@@ -157,6 +226,14 @@ export function CvEditor({ cvId, template: templateProp }: CVEditorProps) {
                 if (parsed.template) setTemplate(parsed.template)
                 if (parsed.zoom) setZoom(parsed.zoom)
                 if (parsed.language) setLanguage(parsed.language)
+                // Load PRO settings
+                if (parsed.editorSettings) {
+                    setLayout(parsed.editorSettings.layout)
+                    setSections(parsed.editorSettings.sections)
+                    setColors(parsed.editorSettings.colors)
+                    setSpacing(parsed.editorSettings.spacing)
+                    setIconStyle(parsed.editorSettings.iconStyle)
+                }
                 toast({
                     title: "Đã tải hồ sơ",
                     description: "Hồ sơ đã được khôi phục từ bản lưu trước đó",
@@ -175,6 +252,13 @@ export function CvEditor({ cvId, template: templateProp }: CVEditorProps) {
             setSelectedFont(prevState.selectedFont)
             setFontSize(prevState.fontSize)
             setTemplate(prevState.template)
+            if (prevState.editorSettings) {
+                setLayout(prevState.editorSettings.layout)
+                setSections(prevState.editorSettings.sections)
+                setColors(prevState.editorSettings.colors)
+                setSpacing(prevState.editorSettings.spacing)
+                setIconStyle(prevState.editorSettings.iconStyle)
+            }
             setHistoryIndex(historyIndex - 1)
             toast({
                 title: "Đã hoàn tác",
@@ -191,6 +275,13 @@ export function CvEditor({ cvId, template: templateProp }: CVEditorProps) {
             setSelectedFont(nextState.selectedFont)
             setFontSize(nextState.fontSize)
             setTemplate(nextState.template)
+            if (nextState.editorSettings) {
+                setLayout(nextState.editorSettings.layout)
+                setSections(nextState.editorSettings.sections)
+                setColors(nextState.editorSettings.colors)
+                setSpacing(nextState.editorSettings.spacing)
+                setIconStyle(nextState.editorSettings.iconStyle)
+            }
             setHistoryIndex(historyIndex + 1)
             toast({
                 title: "Đã làm lại",
@@ -209,6 +300,7 @@ export function CvEditor({ cvId, template: templateProp }: CVEditorProps) {
                 template,
                 zoom,
                 language,
+                editorSettings: currentEditorSettings,
                 lastSaved: new Date().toISOString(),
             }
             localStorage.setItem(`cv-data-${cvId}`, JSON.stringify(dataToSave))
@@ -307,14 +399,27 @@ export function CvEditor({ cvId, template: templateProp }: CVEditorProps) {
 
             <div className="flex-1 flex overflow-hidden">
                 <CVEditorSidebar
+                    // Basic settings
                     selectedColor={selectedColor}
                     selectedFont={selectedFont}
-                    onColorChange={setSelectedColor}
+                    onColorChange={handleColorChange}
                     onFontChange={setSelectedFont}
                     fontSize={fontSize}
                     onFontSizeChange={setFontSize}
                     template={template}
                     onTemplateChange={setTemplate}
+                    // PRO settings
+                    layout={layout}
+                    onLayoutChange={setLayout}
+                    sections={sections}
+                    onSectionsChange={setSections}
+                    colors={colors}
+                    onColorsChange={handleColorsChange}
+                    spacing={spacing}
+                    onSpacingChange={setSpacing}
+                    iconStyle={iconStyle}
+                    onIconStyleChange={setIconStyle}
+                    onImageCropped={handleImageCropped}
                 />
 
                 <CVEditorCanvas
@@ -327,6 +432,12 @@ export function CvEditor({ cvId, template: templateProp }: CVEditorProps) {
                     zoom={zoom}
                     language={language}
                     templateData={templateData}
+                    // Pass PRO settings to canvas
+                    layout={layout}
+                    sections={sections}
+                    colors={colors}
+                    spacing={spacing}
+                    iconStyle={iconStyle}
                 />
             </div>
         </div>

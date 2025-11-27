@@ -7,10 +7,9 @@ import { Button } from "@/components/ui/button"
 interface CallOptionsProps {
     isOpen: boolean
     onVoiceCall: () => void
-    onVideoCall: () => void
 }
 
-export default function CallOptions({ isOpen, onVoiceCall, onVideoCall }: CallOptionsProps) {
+export default function CallOptions({ isOpen, onVoiceCall }: CallOptionsProps) {
     return (
         <AnimatePresence>
             {isOpen && (
@@ -29,15 +28,7 @@ export default function CallOptions({ isOpen, onVoiceCall, onVideoCall }: CallOp
                         <Phone className="h-3 w-3 mr-2" />
                         Gọi thoại admin
                     </Button>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={onVideoCall}
-                        className="w-full text-xs bg-gradient-to-r from-blue-500 to-cyan-500 text-white border-0 hover:from-blue-600 hover:to-cyan-600"
-                    >
-                        <Video className="h-3 w-3 mr-2" />
-                        Gọi video admin
-                    </Button>
+
                 </motion.div>
             )}
         </AnimatePresence>

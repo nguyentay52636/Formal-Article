@@ -1,253 +1,240 @@
 import { NextResponse } from "next/server";
 
-async function openrouterApi(req: Request) {
+// Free models that work without data policy configuration
+const FREE_MODELS = [
+  "google/gemini-2.0-flash-exp:free",
+  "meta-llama/llama-3.2-3b-instruct:free",
+  "qwen/qwen-2.5-7b-instruct:free",
+  "google/gemini-flash-1.5-8b:free",
+];
+
+// System prompt for CV/Job application assistant
+const SYSTEM_PROMPT = `Bạn là trợ lý AI tiếng Việt chuyên về hồ sơ xin việc và tuyển dụng.
+
+**Phạm vi hỗ trợ:**
+- Viết và chỉnh sửa CV/Resume
+- Viết thư xin việc (Cover Letter)
+- Chuẩn bị phỏng vấn
+- Tư vấn kỹ năng và kinh nghiệm
+- Mô tả công việc và yêu cầu tuyển dụng
+
+**Quy tắc trả lời:**
+- Trả lời NGẮN GỌN, RÕ RÀNG bằng tiếng Việt
+- Sử dụng định dạng văn bản thuần túy (plain text)
+- Khi cần, hỏi lại để làm rõ thông tin
+- Nếu câu hỏi ngoài phạm vi, lịch sự từ chối và mời đặt câu hỏi liên quan`;
+
+// Keywords for topic validation
+const ALLOWED_KEYWORDS = [
+  "cv", "sơ yếu lý lịch", "resume", "hồ sơ xin việc", "đơn xin việc",
+  "cover letter", "thư xin việc", "thư ứng tuyển", "viết cv", "mẫu cv",
+  "phỏng vấn", "câu hỏi phỏng vấn", "kinh nghiệm làm việc", "mục tiêu nghề nghiệp",
+  "kỹ năng", "tuyển dụng", "xin việc", "ứng tuyển", "jd", "mô tả công việc",
+  "job", "interview", "apply", "career", "nghề nghiệp", "việc làm",
+  "lương", "salary", "chức vụ", "position", "công ty", "company",
+  "xin chào", "hello", "hi", "chào", "giúp", "help", "hỗ trợ"
+];
+
+function isAllowedTopic(text: string): boolean {
+  if (!text || typeof text !== "string") return false;
+  const lowered = text.toLowerCase();
+  return ALLOWED_KEYWORDS.some(k => lowered.includes(k));
+}
+
+function stripHtml(input: string): string {
+  if (typeof input !== "string") return input;
+  return input
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&#39;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function buildLocalResponse(message: string) {
+  return {
+    id: "local-" + Date.now(),
+    object: "chat.completion",
+    created: Math.floor(Date.now() / 1000),
+    model: "local",
+    choices: [
+      {
+        index: 0,
+        message: { role: "assistant", content: message },
+        finish_reason: "stop",
+      },
+    ],
+  };
+}
+
+async function callOpenRouter(
+  apiKey: string,
+  model: string,
+  messages: any[],
+  safeReferer: string,
+  safeTitle: string
+) {
+  const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "HTTP-Referer": safeReferer || "http://localhost:3000",
+      "X-Title": safeTitle || "CV Assistant",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model,
+      messages,
+      temperature: 0.7,
+      max_tokens: 1024,
+    }),
+  });
+
+  return response;
+}
+
+export async function POST(req: Request) {
   try {
     const body = await req.json();
     const { prompt, messages: conversationHistory } = body;
 
-    console.log("[OpenRouter API] Received request:", { 
-      hasPrompt: !!prompt, 
+    console.log("[OpenRouter] Request received:", {
       promptLength: prompt?.length,
-      historyLength: conversationHistory?.length 
+      historyLength: conversationHistory?.length,
     });
 
+    // Validate API key
     const apiKey = process.env.OPENROUTER_API_KEY;
     if (!apiKey) {
-      console.error("[OpenRouter API] Missing API key");
+      console.error("[OpenRouter] Missing API key");
+      // Return helpful message when API key is missing
       return NextResponse.json(
-        { error: "Thiếu OPENROUTER_API_KEY trên server" },
-        { status: 500 }
+        buildLocalResponse(
+          "Xin chào! Tôi là trợ lý CV. Hiện tại hệ thống đang bảo trì.\n\n" +
+          "Trong lúc chờ đợi, bạn có thể:\n" +
+          "• Tham khảo các mẫu CV có sẵn\n" +
+          "• Liên hệ admin để được hỗ trợ trực tiếp\n\n" +
+          "Xin lỗi vì sự bất tiện này! 🙏"
+        )
       );
     }
 
-    if (!prompt || typeof prompt !== "string" || prompt.trim().length < 3) {
+    // Validate prompt
+    if (!prompt || typeof prompt !== "string" || prompt.trim().length < 2) {
       return NextResponse.json(
-        { error: "Prompt không hợp lệ" },
+        { error: "Vui lòng nhập nội dung tin nhắn" },
         { status: 400 }
       );
     }
 
-    const safeReferer = (process.env.SITE_URL || "").replace(/[^\x00-\x7F]/g, "");
-    const safeTitle = (process.env.SITE_NAME || "CV & Job Application Assistant").replace(
-      /[^\x00-\x7F]/g,
-      ""
-    );
-
-    // Topic scoping: allow only CV/job application/interview related queries
-    function isAllowedTopic(text: string): boolean {
-      if (!text || typeof text !== "string") return false;
-      const lowered = text.toLowerCase();
-      const keywords = [
-        // Vietnamese
-        "cv", "sơ yếu lý lịch", "resume", "hồ sơ xin việc", "đơn xin việc", "cover letter",
-        "thư xin việc", "thư ứng tuyển", "viết cv", "mẫu cv", "mẫu đơn xin việc",
-        "phỏng vấn", "câu hỏi phỏng vấn", "kinh nghiệm làm việc", "mục tiêu nghề nghiệp",
-        "kỹ năng", "kinh nghiệm", "tuyển dụng", "xin việc", "ứng tuyển", "jd", "mô tả công việc",
-        // English fallbacks
-        "job", "interview", "cv ", "resume", "cover letter", "apply",
-      ];
-      return keywords.some(k => lowered.includes(k));
-    }
-
-    function buildLocalChoicesResponse(message: string) {
-      return {
-        id: "local",
-        object: "chat.completion",
-        created: Math.floor(Date.now() / 1000),
-        model: process.env.OPENROUTER_MODEL || "deepseek/deepseek-chat",
-        choices: [
-          {
-            index: 0,
-            message: { role: "assistant", content: message },
-            finish_reason: "stop",
-          },
-        ],
-      };
-    }
-
-    // If prompt and history are not about allowed topics, short-circuit with guidance
-    const historyTexts = Array.isArray(conversationHistory)
-      ? conversationHistory.map((m: any) => (typeof m?.content === "string" ? m.content : "")).join(" \n ")
+    // Check if topic is allowed
+    const historyText = Array.isArray(conversationHistory)
+      ? conversationHistory.map((m: any) => m?.content || "").join(" ")
       : "";
 
-    const inScope = isAllowedTopic(prompt || "") || isAllowedTopic(historyTexts);
+    const isFirstMessage = !conversationHistory || conversationHistory.length === 0;
+    const inScope = isFirstMessage || isAllowedTopic(prompt) || isAllowedTopic(historyText);
+
     if (!inScope) {
-      const guidance =
-        "Mình chỉ hỗ trợ các chủ đề liên quan đến hồ sơ xin việc: CV/Resume, đơn/cover letter, email ứng tuyển, mô tả kinh nghiệm/kỹ năng và chuẩn bị phỏng vấn. Vui lòng đặt câu hỏi liên quan để mình hỗ trợ tốt nhất.";
-      return NextResponse.json(buildLocalChoicesResponse(guidance));
+      return NextResponse.json(
+        buildLocalResponse(
+          "Mình chuyên hỗ trợ về CV, hồ sơ xin việc và phỏng vấn.\n\n" +
+          "Bạn có thể hỏi mình về:\n" +
+          "• Cách viết CV chuyên nghiệp\n" +
+          "• Mẫu thư xin việc\n" +
+          "• Chuẩn bị phỏng vấn\n" +
+          "• Kỹ năng và kinh nghiệm\n\n" +
+          "Hãy đặt câu hỏi liên quan để mình hỗ trợ bạn nhé! 😊"
+        )
+      );
     }
 
+    // Build messages array
     const messages = [
-      {
-        role: "system",
-        content:
-          "Bạn là trợ lý tiếng Việt chuyên về hồ sơ xin việc (CV/Resume), đơn/cover letter, email ứng tuyển, mô tả kinh nghiệm/kỹ năng và chuẩn bị phỏng vấn.\n" +
-          "- Trả lời NGẮN GỌN, RÕ RÀNG, CHỈ THUẦN VĂN BẢN (plain text), KHÔNG dùng HTML/Markdown.\n" +
-          "- Khi cần, hãy hỏi lại để làm rõ thông tin (vị trí, kinh nghiệm, kỹ năng nổi bật).\n" +
-          "- Nếu câu hỏi ngoài phạm vi xin việc/CV/phỏng vấn, hãy lịch sự từ chối và mời đặt câu hỏi liên quan.",
-      },
+      { role: "system", content: SYSTEM_PROMPT },
     ];
 
     if (Array.isArray(conversationHistory) && conversationHistory.length > 0) {
-      messages.push(...conversationHistory);
+      // Only keep last 8 messages for context
+      const recentHistory = conversationHistory.slice(-8);
+      messages.push(...recentHistory);
     }
-    messages.push({
-      role: "user",
-      content: prompt,
-    });
 
-    const defaultModel = "deepseek/deepseek-chat";
-    const model = process.env.OPENROUTER_MODEL || defaultModel;
+    messages.push({ role: "user", content: prompt });
 
-    const requestBody = {
-      model: model,
-      messages: messages,
-      temperature: 0.7,
-    };
+    const safeReferer = (process.env.SITE_URL || "http://localhost:3000").replace(/[^\x00-\x7F]/g, "");
+    const safeTitle = (process.env.SITE_NAME || "CV Assistant").replace(/[^\x00-\x7F]/g, "");
 
-    console.log("[OpenRouter API] Calling OpenRouter with model:", requestBody.model);
-    console.log("[OpenRouter API] Messages count:", messages.length);
+    // Try each model until one works
+    const modelsToTry = [
+      process.env.OPENROUTER_MODEL,
+      ...FREE_MODELS,
+    ].filter(Boolean);
 
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "HTTP-Referer": safeReferer || "http://localhost:3000",
-        "X-Title": safeTitle || "Sai Gon Culinary Hub",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(requestBody),
-    });
+    let lastError: string | null = null;
 
-    console.log("[OpenRouter API] Response status:", response.status);
+    for (const model of modelsToTry) {
+      try {
+        console.log(`[OpenRouter] Trying model: ${model}`);
 
-    if (!response.ok) {
-      const err = await response.text();
-      console.error("[OpenRouter API] Error response:", err);
-      
-      // Nếu lỗi 404 về data policy, thử model fallback
-      if (response.status === 404 && err.includes("data policy")) {
-        console.log("[OpenRouter API] Model requires privacy settings, trying fallback model...");
-        
-        // Thử với model fallback không yêu cầu privacy settings
-        const fallbackModels = [
-          "meta-llama/llama-3.2-3b-instruct:free",
-          "google/gemini-flash-1.5-8b:free",
-          "qwen/qwen-2.5-7b-instruct:free"
-        ];
-        
-        for (const fallbackModel of fallbackModels) {
-          console.log(`[OpenRouter API] Trying fallback model: ${fallbackModel}`);
-          
-          const fallbackResponse = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${apiKey}`,
-              "HTTP-Referer": safeReferer || "http://localhost:3000",
-              "X-Title": safeTitle || "Sai Gon Culinary Hub",
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              model: fallbackModel,
-              messages: messages,
-              temperature: 0.7,
-            }),
-          });
-          
-          if (fallbackResponse.ok) {
-            const fallbackData = await fallbackResponse.json();
-            console.log("[OpenRouter API] Fallback model succeeded");
-            
-            function stripHtml(input: string) {
-              if (typeof input !== "string") return input;
-              const withoutTags = input.replace(/<[^>]*>/g, " ");
-              const replaced = withoutTags
-                .replace(/&nbsp;/g, " ")
-                .replace(/&amp;/g, "&")
-                .replace(/&lt;/g, "<")
-                .replace(/&gt;/g, ">")
-                .replace(/&#39;/g, "'")
-                .replace(/&quot;/g, '"');
-              return replaced.replace(/\s+/g, " ").trim();
-            }
-            
-            if (Array.isArray(fallbackData?.choices) && fallbackData.choices.length > 0) {
-              for (const choice of fallbackData.choices) {
-                const content = choice?.message?.content || choice?.content;
-                if (typeof content === "string") {
-                  if (choice.message) {
-                    choice.message.content = stripHtml(content);
-                  } else {
-                    choice.content = stripHtml(content);
-                  }
+        const response = await callOpenRouter(apiKey, model!, messages, safeReferer, safeTitle);
+
+        if (response.ok) {
+          const data = await response.json();
+
+          if (data.error) {
+            console.error(`[OpenRouter] Model ${model} returned error:`, data.error);
+            lastError = data.error.message || "API error";
+            continue;
+          }
+
+          // Clean response content
+          if (Array.isArray(data?.choices)) {
+            for (const choice of data.choices) {
+              const content = choice?.message?.content || choice?.content;
+              if (typeof content === "string") {
+                if (choice.message) {
+                  choice.message.content = stripHtml(content);
+                } else {
+                  choice.content = stripHtml(content);
                 }
               }
             }
-            
-            return NextResponse.json(fallbackData);
           }
+
+          console.log(`[OpenRouter] Success with model: ${model}`);
+          return NextResponse.json(data);
         }
-        
-        return NextResponse.json(
-          { 
-            error: "Model yêu cầu cấu hình privacy settings. Vui lòng truy cập https://openrouter.ai/settings/privacy để cấu hình, hoặc sử dụng model khác trong biến môi trường OPENROUTER_MODEL" 
-          },
-          { status: 404 }
-        );
-      }
-      
-      return NextResponse.json(
-        { error: err || "OpenRouter error" },
-        { status: response.status }
-      );
-    }
 
-    const data = await response.json();
+        const errorText = await response.text();
+        console.error(`[OpenRouter] Model ${model} failed:`, response.status, errorText);
+        lastError = errorText;
 
-    console.log("[OpenRouter API] Response received, choices count:", data?.choices?.length);
-
-    if (data.error) {
-      console.error("[OpenRouter API] Error in response:", data.error);
-      return NextResponse.json(
-        { error: data.error.message || "OpenRouter API error" },
-        { status: 500 }
-      );
-    }
-
-    function stripHtml(input: string) {
-      if (typeof input !== "string") return input;
-      const withoutTags = input.replace(/<[^>]*>/g, " ");
-      const replaced = withoutTags
-        .replace(/&nbsp;/g, " ")
-        .replace(/&amp;/g, "&")
-        .replace(/&lt;/g, "<")
-        .replace(/&gt;/g, ">")
-        .replace(/&#39;/g, "'")
-        .replace(/&quot;/g, '"');
-      return replaced.replace(/\s+/g, " ").trim();
-    }
-    if (Array.isArray(data?.choices) && data.choices.length > 0) {
-      for (const choice of data.choices) {
-        const content = choice?.message?.content || choice?.content;
-        if (typeof content === "string") {
-          if (choice.message) {
-            choice.message.content = stripHtml(content);
-          } else {
-            choice.content = stripHtml(content);
-          }
-        }
+      } catch (modelError: any) {
+        console.error(`[OpenRouter] Model ${model} exception:`, modelError.message);
+        lastError = modelError.message;
       }
     }
 
-    return NextResponse.json(data);
-  } catch (error: any) {
+    // All models failed
+    console.error("[OpenRouter] All models failed. Last error:", lastError);
     return NextResponse.json(
-      { error: "Lỗi khi gọi OpenRouter API" },
-      { status: 500 }
+      buildLocalResponse(
+        "Xin lỗi, mình đang gặp sự cố kỹ thuật.\n\n" +
+        "Vui lòng thử lại sau hoặc liên hệ admin để được hỗ trợ trực tiếp. 🙏"
+      )
+    );
+
+  } catch (error: any) {
+    console.error("[OpenRouter] Unexpected error:", error);
+    return NextResponse.json(
+      buildLocalResponse(
+        "Đã có lỗi xảy ra. Vui lòng thử lại sau."
+      )
     );
   }
-}
-
-export async function POST(req: Request) {
-  return openrouterApi(req);
 }

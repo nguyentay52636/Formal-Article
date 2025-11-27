@@ -19,10 +19,14 @@ export default function RootLayout({
 }>) {
   const pathname = usePathname();
   const isAdminPage = pathname.startsWith("/quantri");
+  const isCvEditorPage = pathname.startsWith("/chinh-sua-don");
+  
+  // Full screen mode for CV Editor - hide all UI
+  const isFullScreenMode = isCvEditorPage;
+  
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-      >
+      <body>
         <ThemeProvider
           attribute="class"
           defaultTheme="light"
@@ -30,15 +34,14 @@ export default function RootLayout({
         >
           <ReduxProvider>
             <Suspense fallback={null}>
-              {!isAdminPage && <Header />}
-              {!isAdminPage && <Logo />}
+              {!isAdminPage && !isFullScreenMode && <Header />}
+              {!isAdminPage && !isFullScreenMode && <Logo />}
               {children}
-              <Chat />
-              {!isAdminPage && <Footer />}
+              {!isFullScreenMode && <Chat />}
+              {!isAdminPage && !isFullScreenMode && <Footer />}
             </Suspense>
           </ReduxProvider>
           <Toaster />
-
         </ThemeProvider>
       </body>
     </html>

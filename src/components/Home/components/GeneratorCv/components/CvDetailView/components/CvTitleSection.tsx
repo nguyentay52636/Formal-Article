@@ -4,9 +4,9 @@ import Link from "next/link"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-
+import ActionUsedTemplate from "../../ActionUsedTemplate"
 interface CvTitleSectionProps {
-    id: number | undefined
+    id: number
     title: string
     tag: string | undefined
     industry: string
@@ -24,13 +24,7 @@ export function CvTitleSection({ id, title, tag, industry }: CvTitleSectionProps
                     {industry}
                 </Badge>
             </div>
-            <Button
-                size="lg"
-                className="w-full text-white bg-[#ed145b]! hover:bg-[#ed145b]/90! text-white font-bold text-lg h-14 shadow-lg hover:shadow-xl transition-all"
-                asChild
-            >
-                <Link href={`/chinh-sua-don/${id}`}>DÙNG NGAY MẪU CV NÀY</Link>
-            </Button>
+            <ActionUsedTemplate id={id} />
             <p className="text-xs text-center text-muted-foreground mt-3">Miễn phí • Không cần đăng ký • Chỉnh sửa trực tuyến</p>
         </div>
     )

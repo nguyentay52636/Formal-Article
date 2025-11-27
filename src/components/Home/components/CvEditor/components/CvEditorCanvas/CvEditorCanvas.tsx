@@ -3,7 +3,13 @@
 import { CVData } from "../../CvEditor"
 import { CVEditorPreview } from "../CvEditorPreview/CvEditorPreview"
 import { ITemplate } from "@/apis/templateApi"
-
+import type {
+    LayoutType,
+    Section,
+    ColorSettings,
+    SpacingSettings,
+    IconStyle
+} from "../../types/editor-settings"
 
 interface CVEditorCanvasProps {
     cvData: CVData
@@ -15,6 +21,12 @@ interface CVEditorCanvasProps {
     zoom: number
     language: "vi" | "en"
     templateData?: ITemplate | null
+    // PRO settings
+    layout?: LayoutType
+    sections?: Section[]
+    colors?: ColorSettings
+    spacing?: SpacingSettings
+    iconStyle?: IconStyle
 }
 
 export function CVEditorCanvas({
@@ -27,6 +39,12 @@ export function CVEditorCanvas({
     zoom,
     language,
     templateData,
+    // PRO settings
+    layout,
+    sections,
+    colors,
+    spacing,
+    iconStyle,
 }: CVEditorCanvasProps) {
     return (
         <main className="flex-1 overflow-auto bg-[#2C2C2C] p-8">
@@ -43,6 +61,12 @@ export function CVEditorCanvas({
                     template={template}
                     language={language}
                     templateData={templateData}
+                    // PRO settings
+                    layout={layout}
+                    sections={sections}
+                    colors={colors}
+                    spacing={spacing}
+                    iconStyle={iconStyle}
                 />
             </div>
         </main>

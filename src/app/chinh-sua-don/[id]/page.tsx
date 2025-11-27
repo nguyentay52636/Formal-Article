@@ -26,14 +26,17 @@ export default function Page() {
 
     if (loading || !template) {
         return (
-            <div className="h-screen flex items-center justify-center">
-                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            <div className="fixed inset-0 flex items-center justify-center bg-[#1E1E1E] z-50">
+                <div className="flex flex-col items-center gap-4">
+                    <Loader2 className="w-10 h-10 animate-spin text-[#0066CC]" />
+                    <p className="text-white text-sm">Đang tải CV Editor...</p>
+                </div>
             </div>
         )
     }
 
     return (
-        <div className="h-screen">
+        <div className="fixed inset-0 z-50 bg-[#1E1E1E]">
             <CvEditor cvId={id || ""} template={template} />
         </div>
     )
