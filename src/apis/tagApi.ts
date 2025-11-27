@@ -1,55 +1,62 @@
 import baseApi from "./baseApi";
 import { ITag } from "./types";
 
-export const getAllTags = async () => {
+export const getAllTags = async (): Promise<ITag[]> => {
     try {
         const { data } = await baseApi.get("/tags");
-        return data;
+        return Array.isArray(data) ? data : [];
     } catch (error) {
         console.error("Error fetching tags:", error);
         return [];
     }
 }
-export const getTagsById = async (id: number) => {
+
+export const getTagsById = async (id: number): Promise<ITag | null> => {
     try {
         const { data } = await baseApi.get(`/tags/${id}`);
-        return data;
+        return data ?? null;
     } catch (error) {
+        console.error("Error fetching tag:", error);
         return null;
     }
 }
-export const deleteTag = async (id: number) => {
+
+export const deleteTag = async (id: number): Promise<boolean> => {
     try {
-        const { data } = await baseApi.delete(`/tags/${id}`);
-        return data;
+        const response = await baseApi.delete(`/tags/${id}`);
+        return response.status === 200;
     } catch (error) {
         console.error("Error deleting tag:", error);
-        return null;
+        throw error;
     }
 }
-export const updateTag = async (id: number, tag: ITag) => {
+
+type TagPayload = Pick<ITag, "name" | "slug" | "type">
+
+export const updateTag = async (id: number, tag: TagPayload): Promise<ITag | null> => {
     try {
         const { data } = await baseApi.put(`/tags/${id}`, tag);
-        return data;
+        return data ?? null;
     } catch (error) {
         console.error("Error updating tag:", error);
-        return null;
+        throw error;
     }
 }
-export const createTag = async (tag: ITag) => {
+
+export const createTag = async (tag: TagPayload): Promise<ITag | null> => {
     try {
         const { data } = await baseApi.post("/tags", tag);
-        return data;
+        return data ?? null;
     } catch (error) {
         console.error("Error creating tag:", error);
-        return null;
+        throw error;
     }
 }
-export const getListByTags = async (typeTag: string) => {
-    const tags = ["job_field", "position", "design"];
+
+export const getListByTags = async (typeTag: string): Promise<ITag[]> => {
     try {
         const { data } = await baseApi.get(`/tags/type/${typeTag}`);
-        return data;
+        return Array.isArray(data) ? data : [];
     } catch (error) {
         console.error("Error fetching tags:", error);
         return [];

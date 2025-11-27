@@ -67,10 +67,10 @@ export const deleteTemplate = async (id: number) => {
         return null;
     }
 }
-export const getTemplateByTagId = async (tagId: number) => {
+export const getTemplateByTagId = async (tagId: number): Promise<ITemplate[]> => {
     try {
         const { data } = await baseApi.get(`/templates/tag/${tagId}`);
-        return data;
+        return Array.isArray(data) ? data : [];
     } catch (error) {
         console.error("Error fetching templates by tag:", error);
         return [];

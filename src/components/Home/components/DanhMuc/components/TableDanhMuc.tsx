@@ -1,8 +1,9 @@
-import React from 'react'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Edit, FolderTree, Trash2 } from 'lucide-react'
+import React from "react"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Edit, FolderTree, Trash2 } from "lucide-react"
+
 export type CategoryItem = {
     id: number
     ten: string
@@ -18,27 +19,39 @@ type Props = {
     categories: CategoryItem[]
     onEdit: (category: CategoryItem) => void
     onDelete: (category: CategoryItem) => void
+    loading?: boolean
 }
 
-export default function TableDanhMuc({ categories, onEdit, onDelete }: Props) {
+export default function TableDanhMuc({ categories, onEdit, onDelete, loading }: Props) {
     return (
-        <>
-            <div className="rounded-lg border border-border bg-card">
-
-                <Table>
-                    <TableHeader>
+        <div className="rounded-lg border border-border bg-card">
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead>Tên danh mục</TableHead>
+                        <TableHead>Đường dẫn</TableHead>
+                        <TableHead>Danh mục cha</TableHead>
+                        <TableHead>Số bài viết</TableHead>
+                        <TableHead>Thứ tự</TableHead>
+                        <TableHead>Trạng thái</TableHead>
+                        <TableHead className="w-[100px]">Thao tác</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {loading ? (
                         <TableRow>
-                            <TableHead>Tên danh mục</TableHead>
-                            <TableHead>Đường dẫn</TableHead>
-                            <TableHead>Danh mục cha</TableHead>
-                            <TableHead>Số bài viết</TableHead>
-                            <TableHead>Thứ tự</TableHead>
-                            <TableHead>Trạng thái</TableHead>
-                            <TableHead className="w-[100px]">Thao tác</TableHead>
+                            <TableCell colSpan={7} className="text-center text-muted-foreground">
+                                Đang tải danh mục...
+                            </TableCell>
                         </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {categories.map((category) => (
+                    ) : categories.length === 0 ? (
+                        <TableRow>
+                            <TableCell colSpan={7} className="text-center text-muted-foreground">
+                                Chưa có danh mục.
+                            </TableCell>
+                        </TableRow>
+                    ) : (
+                        categories.map((category) => (
                             <TableRow key={category.id}>
                                 <TableCell className="font-medium">
                                     <div className="flex items-center gap-2">
@@ -66,13 +79,13 @@ export default function TableDanhMuc({ categories, onEdit, onDelete }: Props) {
                                     </div>
                                 </TableCell>
                             </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-                {/* <PaginationProvider total={categories.length} initialPageSize={5}>
-                    <PaginationCategory categories={categories} onEdit={onEdit} onDelete={onDelete} />
-                </PaginationProvider> */}
-            </div>
-        </>
+                        ))
+                    )}
+                </TableBody>
+            </Table>
+            {/* <PaginationProvider total={categories.length} initialPageSize={5}>
+                <PaginationCategory categories={categories} onEdit={onEdit} onDelete={onDelete} />
+            </PaginationProvider> */}
+        </div>
     )
 }

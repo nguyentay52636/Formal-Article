@@ -1,15 +1,15 @@
 export interface IUser {
     id: number,
     fullName: string,
-    phone: string,
+    phone?: string,
     email: string,
-    password: string,
+    password?: string,
     avatar?: string,
     active: boolean,
-    roleId: number,
+    roleId?: number,
     role?: IRole,
-    createdAt: string,
-    updatedAt: string
+    createdAt?: string,
+    updatedAt?: string
 }
 
 export interface RegisterDTO {
@@ -66,6 +66,8 @@ export interface ITag {
     id?: number;
     slug: string;
     name: string;
+    type?: string;
+    templateCount?: number;
     createdAt?: string;
     updatedAt?: string;
 }

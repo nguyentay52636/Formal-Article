@@ -1,13 +1,13 @@
-export interface Tag {
-  id: number
-  ten: string
-  duongDan: string
-  soBaiViet: number
-}
+import { ITag } from "@/apis/types"
+
+export type Tag = ITag
 
 export interface TagsStats {
   totalTags: number
-  mostPopularTag: string
-  averagePostsPerTag: number
-  totalUsage: number
+  totalTemplates: number
+  averageTemplatesPerTag: number
+  mostPopularTag: {
+    name: string
+    templateCount: number
+  } | null
 }

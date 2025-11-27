@@ -1,36 +1,144 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Separator } from "@/components/ui/separator"
 import { FileText, Bookmark, MessageSquare, Download } from "lucide-react"
-import Link from "next/link"
 import ProfileHeader from "./components/ProfileHeader"
 import ArticlesTab from "./components/ArticlesTab"
 import SavedTab from "./components/SavedTab"
 import DownloadedTab from "./components/DownloadedTab"
 import CommentsTab from "./components/CommentsTab"
+import { useFavorite } from "@/hooks/useFavorite"
+import { useAppDispatch, useAppSelector } from "@/redux/hooks"
+import { selectAuth, setCredentials } from "@/redux/Slice/authSlice"
+import { getUserById } from "@/apis/userApi"
+import { IUser } from "@/apis/types"
+import { SavedDocItem, UserProfile } from "./types"
+import ProfileInfoCard from "./components/ProfileInfoCard"
+import { Skeleton } from "@/components/ui/skeleton"
+import { toast } from "react-hot-toast"
+
+const mapRoleToProfileKey = (roleName?: string): UserProfile["vai_tro"] => {
+    switch ((roleName || "").toLowerCase()) {
+        case "admin":
+        case "quan_tri":
+            return "quan_tri"
+        case "editor":
+        case "bien_tap":
+            return "bien_tap"
+        case "author":
+        case "tac_gia":
+            return "tac_gia"
+        default:
+            return "doc_gia"
+    }
+}
 
 export default function HoSo() {
-    // const { user, isLoading: authLoading } = useAuth()
-    const user = {
-        id: 1,
-        ten: "Nguyễn Văn A",
-        email: "nguyenvana@example.com",
-        avatar: "/diverse-user-avatars.png",
-        vai_tro: "quan_tri",
-    }
     const router = useRouter()
+    const dispatch = useAppDispatch()
+    const { user: authUser, token, isAuthenticated } = useAppSelector(selectAuth)
+    const { favorites, loading: favoritesLoading, removeFavorite } = useFavorite()
+    const [profile, setProfile] = useState<IUser | null>(authUser)
+    const [profileLoading, setProfileLoading] = useState(false)
+    const [profileError, setProfileError] = useState<string | null>(null)
+
+    useEffect(() => {
+        if (!authUser && !isAuthenticated) {
+            router.push("/dang-nhap")
+        }
+    }, [authUser, isAuthenticated, router])
+
+    useEffect(() => {
+        if (!authUser?.id) return
+        let isMounted = true
+
+        const fetchProfile = async () => {
+            setProfileLoading(true)
+            setProfileError(null)
+            try {
+                const latest = await getUserById(authUser.id)
+                if (latest && isMounted) {
+                    setProfile(latest)
+                }
+            } catch (error) {
+                console.error("Failed to load profile", error)
+                if (isMounted) {
+                    setProfileError("Không thể tải thông tin hồ sơ. Vui lòng thử lại.")
+                }
+            } finally {
+                if (isMounted) {
+                    setProfileLoading(false)
+                }
+            }
+        }
+
+        fetchProfile()
+
+        return () => {
+            isMounted = false
+        }
+    }, [authUser?.id])
 
     // Mock data - replace with actual API calls
-    const [stats, setStats] = useState({
-        articles: 12,
-        savedDocs: 8,
-        comments: 24,
-        reactions: 45,
-    })
+    const favoriteDocs = useMemo<SavedDocItem[]>(() => {
+        return favorites
+            .map((item) => ({
+                id: item.id,
+                tieu_de: item.name,
+                duong_dan: item.path,
+                ngay_luu: item.savedAt,
+            }))
+            .sort(
+                (a, b) =>
+                    new Date(b.ngay_luu).getTime() - new Date(a.ngay_luu).getTime()
+            )
+    }, [favorites])
+    const handleRemoveFavoriteDoc = useCallback(
+        async (templateId: number) => {
+            try {
+                await removeFavorite(templateId)
+                toast.success("Đã xóa khỏi mục Đã lưu")
+            } catch (error) {
+                console.error("Failed to remove favorite template", error)
+                toast.error("Không thể xóa mục Đã lưu. Vui lòng thử lại.")
+            }
+        },
+        [removeFavorite]
+    )
+
+
+    const profileStats = useMemo(
+        () => ({
+            articles: 0,
+            savedDocs: favoriteDocs.length,
+            comments: 0,
+            reactions: 0,
+        }),
+        [favoriteDocs.length]
+    )
+
+    const profileForHeader = useMemo<UserProfile | null>(() => {
+        if (!profile) return null
+        return {
+            id: profile.id,
+            ten: profile.fullName || profile.email,
+            email: profile.email,
+            avatar: profile.avatar,
+            vai_tro: mapRoleToProfileKey(profile.role?.name),
+        }
+    }, [profile])
+
+    const handleProfileUpdated = (updated: IUser) => {
+        setProfile(updated)
+        if (token) {
+            dispatch(setCredentials({ user: updated, token }))
+        } else if (typeof window !== "undefined") {
+            localStorage.setItem("currentUser", JSON.stringify(updated))
+        }
+    }
 
     const [userArticles, setUserArticles] = useState([
         {
@@ -50,21 +158,6 @@ export default function HoSo() {
             luot_xem: 2345,
             luot_tai: 789,
             trang_thai: "xuat_ban",
-        },
-    ])
-
-    const [savedDocs, setSavedDocs] = useState([
-        {
-            id: 1,
-            tieu_de: "Đơn xin nghỉ phép",
-            duong_dan: "don-xin-nghi-phep",
-            ngay_luu: "2024-01-20",
-        },
-        {
-            id: 2,
-            tieu_de: "Đơn xin chuyển công tác",
-            duong_dan: "don-xin-chuyen-cong-tac",
-            ngay_luu: "2024-01-18",
         },
     ])
 
@@ -115,10 +208,21 @@ export default function HoSo() {
             ngay_tao: "2024-01-21",
         },
     ])
+    if (!authUser && profileLoading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-background">
+                <Skeleton className="h-32 w-32 rounded-full" />
+            </div>
+        )
+    }
 
-
-
-    if (!user) return null
+    if (!authUser && !profileLoading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-background px-4 text-center text-muted-foreground">
+                Bạn cần đăng nhập để xem trang hồ sơ.
+            </div>
+        )
+    }
 
     return (
         <div className="min-h-screen flex flex-col bg-background">
@@ -127,7 +231,27 @@ export default function HoSo() {
                 <div className="container mx-auto px-4">
                     <div className="max-w-6xl mx-auto space-y-8">
                         {/* Profile Header */}
-                        <ProfileHeader user={user} stats={stats} />
+                        {profileLoading ? (
+                            <Skeleton className="h-48 w-full rounded-2xl" />
+                        ) : profileForHeader ? (
+                            <ProfileHeader user={profileForHeader} stats={profileStats} />
+                        ) : (
+                            <div className="rounded-2xl border border-dashed p-6 text-center text-muted-foreground">
+                                Không tìm thấy thông tin hồ sơ người dùng.
+                            </div>
+                        )}
+
+                        {profileError && (
+                            <p className="text-sm text-destructive">{profileError}</p>
+                        )}
+
+                        {profile && (
+                            <ProfileInfoCard
+                                user={profile}
+                                onUpdated={handleProfileUpdated}
+                                isLoading={profileLoading}
+                            />
+                        )}
 
                         {/* Tabs Content */}
                         <Tabs defaultValue="articles" className="space-y-6">
@@ -157,7 +281,11 @@ export default function HoSo() {
 
                             {/* Saved Documents Tab */}
                             <TabsContent value="saved" className="space-y-4">
-                                <SavedTab savedDocs={savedDocs} />
+                                <SavedTab
+                                    savedDocs={favoriteDocs}
+                                    isLoading={favoritesLoading}
+                                    onRemove={handleRemoveFavoriteDoc}
+                                />
                             </TabsContent>
 
                             {/* Downloaded Documents Tab */}

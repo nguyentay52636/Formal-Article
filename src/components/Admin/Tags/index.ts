@@ -14,4 +14,3 @@ export { useTagsManagement } from './hooks/useTagsManagement'
 
 export type { Tag, TagsStats } from './types'
 
-export { mockTags, tagsStats } from './data/mockData'

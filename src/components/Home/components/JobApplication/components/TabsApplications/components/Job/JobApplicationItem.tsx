@@ -1,5 +1,5 @@
 "use client"
-import React, { useState } from 'react'
+import React from 'react'
 import Link from 'next/link'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -8,12 +8,28 @@ import { Eye, Download, Heart } from 'lucide-react'
 import { ITemplate } from '@/apis/templateApi'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { useFavorite } from '@/hooks/useFavorite'
+import { toast } from 'react-hot-toast'
 interface JobApplicationItemProps {
     jobApplication: ITemplate
 }
 export default function JobApplicationItem({ jobApplication }: JobApplicationItemProps) {
-    const [isLiked, setIsLiked] = useState(false)
     const { id, name, slug, summary, previewUrl, views, downloads, tag, color } = jobApplication;
+    const { toggleFavorite, isFavorite } = useFavorite()
+    const liked = isFavorite(id)
+
+    const handleToggleFavorite = async (event: React.MouseEvent<HTMLButtonElement>) => {
+        event.preventDefault()
+        event.stopPropagation()
+        try {
+            const nowFavorite = await toggleFavorite(jobApplication, { path: `/don-xin-viec/${id}` })
+            toast.success(nowFavorite ? "Đã lưu vào mục Đã lưu" : "Đã xóa khỏi mục Đã lưu")
+        } catch (error) {
+            console.error("Không thể cập nhật mục đã lưu", error)
+            toast.error("Không thể cập nhật mục Đã lưu. Vui lòng thử lại.")
+        }
+    }
+
     return (
         <>
             <Link key={jobApplication.id} href={`/don-xin-viec/${jobApplication.id}`}>
@@ -30,13 +46,17 @@ export default function JobApplicationItem({ jobApplication }: JobApplicationIte
                                 className="object-cover group-hover:scale-105 transition-transform duration-300"
                             />
                             <Button
-                                onClick={() => setIsLiked(!isLiked)}
+                                type="button"
+                                onClick={handleToggleFavorite}
                                 className="absolute right-3 top-3 z-10 rounded-full bg-white/80 p-2 backdrop-blur-sm shadow hover:bg-white transition"
+                                aria-pressed={liked}
+                                aria-label={liked ? "Bỏ lưu mẫu CV" : "Lưu mẫu CV"}
                             >
                                 <Heart
+                                    fill={liked ? "currentColor" : "none"}
                                     className={cn(
                                         "h-6 w-6 transition",
-                                        isLiked ? "fill-red-500 text-red-500" : "text-gray-600"
+                                        liked ? "fill-red-500 text-red-500" : "text-gray-600"
                                     )}
                                 />
                             </Button>

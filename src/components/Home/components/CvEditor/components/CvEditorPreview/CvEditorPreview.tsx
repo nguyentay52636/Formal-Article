@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import type React from "react"
 
@@ -21,10 +21,13 @@ import {
     Plus,
     Trash2,
     Camera,
+    Sparkles,
+    Loader2,
 } from "lucide-react"
-import { useRef } from "react"
+import { useRef, useState } from "react"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import type { CVData } from "../../CvEditor"
-import { cvTranslations } from "@/lib/cv-translations" // Import translations
+import { cvTranslations } from "@/lib/cv-translations"
 import { ITemplate } from "@/apis/templateApi"
 
 interface CVEditorPreviewProps {
@@ -49,8 +52,11 @@ export function CVEditorPreview({
     templateData,
 }: CVEditorPreviewProps) {
     const fileInputRef = useRef<HTMLInputElement>(null)
-
     const t = cvTranslations[language]
+
+    const [aiDialogOpen, setAiDialogOpen] = useState(false)
+    const [aiSuggestion, setAiSuggestion] = useState("")
+    const [aiLoading, setAiLoading] = useState(false)
 
     const updatePersonalInfo = (field: string, value: string) => {
         setCVData({
@@ -261,6 +267,65 @@ export function CVEditorPreview({
     const getTextColor = () => {
         return template === "minimal" ? "#000000" : "#FFFFFF"
     }
+
+        const currentInterestsText = cvData.interests.length
+        ? cvData.interests.map((item, idx) => `${idx + 1}. ${item.interest || "..."}`).join("\n")
+        : "Chưa có nội dung"
+
+    const aiPresets = [
+        `• Tôi là người yêu thích đọc sách, đặc biệt là tiểu thuyết và sách về tâm lý học.
+• Tôi thường xuyên tham gia các câu lạc bộ đọc sách để trao đổi kiến thức và mở rộng mối quan hệ.
+• Ngoài ra, tôi có niềm đam mê vẽ tranh và thường dành thời gian rảnh để sáng tạo.
+• Tôi cũng thích nấu ăn và thử nghiệm các công thức mới, đặc biệt là các món ăn healthy.
+• Tôi là một người yêu thích du lịch và khám phá những vùng đất mới, trải nghiệm những nền văn hóa khác nhau.`,
+        `• Tôi mê thể thao ngoài trời như chạy bộ và leo núi vì giúp tôi giữ sức khỏe.
+• Tôi thích học ngoại ngữ và thường luyện nghe nói tiếng Anh, tiếng Nhật mỗi tuần.
+• Tôi hay nấu ăn cuối tuần, thử biến tấu món Việt theo phong cách healthy.
+• Tôi thích xem phim tài liệu về lịch sử và khoa học để mở rộng kiến thức.
+• Tôi dành thời gian viết blog để chia sẻ trải nghiệm du lịch và ẩm thực.`,
+        `• Tôi yêu thiên nhiên, thích trồng cây và chăm sóc vườn nhỏ trên ban công.
+• Tôi tham gia hoạt động thiện nguyện, đặc biệt là hỗ trợ trẻ em vùng cao.
+• Tôi đam mê công nghệ, thích thử các ứng dụng AI hỗ trợ làm việc hiệu quả hơn.
+• Tôi chơi nhạc cụ guitar và thường đàn những bài acoustic thư giãn cuối ngày.
+• Tôi thích khám phá cà phê specialty, ghi chú hương vị và chia sẻ với bạn bè.`,
+    ]
+
+    const buildAiSuggestion = () => {
+        setAiLoading(true)
+        const suggestion = aiPresets[Math.floor(Math.random() * aiPresets.length)]
+        setTimeout(() => {
+            setAiSuggestion(suggestion)
+            setAiLoading(false)
+        }, 350)
+    }
+
+    const applyAiSuggestion = () => {
+        if (!aiSuggestion.trim()) {
+            setAiDialogOpen(false)
+            return
+        }
+
+        const normalizedInterests = aiSuggestion
+            .split("\n")
+            .map((line) => line.replace(/^\\W+\\s*/, "").trim())
+            .filter(Boolean)
+
+        if (!normalizedInterests.length) {
+            setAiDialogOpen(false)
+            return
+        }
+
+        setCVData({
+            ...cvData,
+            interests: normalizedInterests.map((interest, index) => ({
+                id: `${Date.now()}-${index}`,
+                interest,
+            })),
+        })
+        setAiDialogOpen(false)
+    }
+
+    void templateData
 
     return (
         <Card
@@ -559,7 +624,7 @@ export function CVEditorPreview({
                         </div>
                     </section>
 
-                    {/* Skills (Tin học) */}
+                    {/* Skills */}
                     <section className="border-l-4 pl-4" style={{ borderColor: selectedColor }}>
                         <div className="flex items-center justify-between mb-3">
                             <h2 className="text-lg font-bold flex items-center gap-2" style={{ color: selectedColor }}>
@@ -620,15 +685,29 @@ export function CVEditorPreview({
                                 <Heart className="w-5 h-5" />
                                 {t.interests}
                             </h2>
-                            <Button
-                                onClick={addInterest}
-                                variant="ghost"
-                                size="sm"
-                                className="h-6 w-6 p-0"
-                                style={{ color: selectedColor }}
-                            >
-                                <Plus className="w-4 h-4" />
-                            </Button>
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    onClick={() => {
+                                        setAiDialogOpen(true)
+                                        buildAiSuggestion()
+                                    }}
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-8 gap-1 border-dashed"
+                                >
+                                    <Sparkles className="w-4 h-4" />
+                                    Sá»­ dá»¥ng AI
+                                </Button>
+                                <Button
+                                    onClick={addInterest}
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-6 w-6 p-0"
+                                    style={{ color: selectedColor }}
+                                >
+                                    <Plus className="w-4 h-4" />
+                                </Button>
+                            </div>
                         </div>
                         <div className="space-y-2">
                             {cvData.interests.map((interest) => (
@@ -740,6 +819,57 @@ export function CVEditorPreview({
                     </div>
                 </section>
             </div>
+            <Dialog open={aiDialogOpen} onOpenChange={setAiDialogOpen}>
+                <DialogContent className="max-w-3xl">
+                    <DialogHeader>
+                        <DialogTitle>Sử dụng AI để hỗ trợ viết</DialogTitle>
+                        <DialogDescription>AI gợi ý nhanh phần Sở thích, kèm tuỳ chọn nghe lại bằng giọng đọc.</DialogDescription>
+                    </DialogHeader>
+
+                    <div className="space-y-4">
+                        <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+                            <p className="font-semibold text-red-700">Nội dung hiện tại:</p>
+                            <p className="mt-2 whitespace-pre-wrap text-sm text-red-800">{currentInterestsText}</p>
+                        </div>
+
+                        <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4">
+                            <div className="flex flex-wrap items-center justify-between gap-3">
+                                <p className="font-semibold text-emerald-700">Nội dung AI gợi ý:</p>
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <Button variant="outline" size="sm" onClick={buildAiSuggestion} disabled={aiLoading}>
+                                        {aiLoading ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Sparkles className="w-4 h-4 mr-1" />}
+                                        Lấy gợi ý mới
+                                    </Button>
+                                </div>
+                            </div>
+                            {aiLoading ? (
+                                <div className="flex items-center gap-2 text-sm text-emerald-800 mt-3">
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                    <span>AI đang chuẩn bị gợi ý...</span>
+                                </div>
+                            ) : (
+                                <Textarea
+                                    value={aiSuggestion}
+                                    onChange={(e) => setAiSuggestion(e.target.value)}
+                                    className="mt-3 min-h-[200px] bg-white"
+                                />
+                            )}
+                        </div>
+                    </div>
+
+                    <DialogFooter className="gap-2">
+                        <Button variant="outline" onClick={() => setAiDialogOpen(false)}>
+                            Bỏ qua
+                        </Button>
+                        <Button onClick={applyAiSuggestion} disabled={!aiSuggestion.trim()}>
+                            Chấp nhận
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </Card>
     )
 }
+
+
+

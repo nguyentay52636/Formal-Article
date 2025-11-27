@@ -1,8 +1,55 @@
 import baseApi from "@/apis/baseApi"
 import { IUser, RegisterDTO } from "./types";
 
+interface MockCredential {
+    email: string
+    password: string
+    user: IUser
+    accessToken: string
+}
+
+const mockTestUsers: MockCredential[] = [
+    {
+        email: "tester@formal.vn",
+        password: "123456",
+        accessToken: "mock-token-formal-tester",
+        user: {
+            id: 9999,
+            fullName: "Tester Formal Article",
+            phone: "0900000000",
+            email: "tester@formal.vn",
+            password: "123456",
+            avatar: "/diverse-user-avatars.png",
+            active: true,
+            roleId: 2,
+            role: {
+                id: 2,
+                name: "tester",
+            },
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+        },
+    },
+]
+
+const matchMockCredential = (email?: string, password?: string) =>
+    mockTestUsers.find(
+        (mockUser) =>
+            mockUser.email.toLowerCase() === (email || "").toLowerCase() &&
+            mockUser.password === password
+    )
 
 export const LoginAPI = async (userData: { email?: string, password: string }) => {
+    const mockMatched = matchMockCredential(userData.email, userData.password)
+    if (mockMatched) {
+        // Simulate network latency so UI feedback stays consistent
+        await new Promise((resolve) => setTimeout(resolve, 350))
+        return {
+            user: mockMatched.user,
+            accessToken: mockMatched.accessToken,
+        }
+    }
+
     try {
         const { data } = await baseApi.post("/auth/login", userData)
         console.log("🔍 LoginAPI Response:", data)
