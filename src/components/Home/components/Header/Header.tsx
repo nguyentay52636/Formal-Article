@@ -40,17 +40,25 @@ export function Header() {
 
                     {/* Desktop Navigation */}
                     <nav className="hidden md:flex items-center gap-6 hover:text-gray-300! ">
-                        {navItems.map((item) => (
-                            <Link
-                                key={item.href}
-                                href={item.href}
-                                className="text-xl font-bold text-white!  transition-colors hover:text-gray-300! "
-                            >
-                                <span className=" font-bold text-white! hover:text-foreground transition-colors">
-                                    {item.label}
-                                </span>
-                            </Link>
-                        ))}
+                        {navItems
+                            .filter((item) => {
+                                // Only show "Quản trị" for admin (role.id === 1)
+                                if (item.href === "/quantri") {
+                                    return user?.role?.id === 1;
+                                }
+                                return true;
+                            })
+                            .map((item) => (
+                                <Link
+                                    key={item.href}
+                                    href={item.href}
+                                    className="text-xl font-bold text-white!  transition-colors hover:text-gray-300! "
+                                >
+                                    <span className=" font-bold text-white! hover:text-foreground transition-colors">
+                                        {item.label}
+                                    </span>
+                                </Link>
+                            ))}
                     </nav>
 
                     <div className="flex items-center">

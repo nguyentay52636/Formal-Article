@@ -40,7 +40,7 @@ export default function DangNhap() {
                         </CardHeader>
                         <CardContent>
                             <form onSubmit={onSubmit} className="space-y-6">
-                                {emailNotVerified && (
+                                {/* {emailNotVerified && (
                                     <Alert className="bg-yellow-50 border-yellow-200">
                                         <div className="flex items-start gap-3">
                                             <AlertTriangle className="h-5 w-5 text-yellow-600 mt-0.5" />
@@ -57,7 +57,7 @@ export default function DangNhap() {
                                             </div>
                                         </div>
                                     </Alert>
-                                )}
+                                )} */}
 
                                 {error && !emailNotVerified && (
                                     <Alert variant="destructive">
