@@ -63,13 +63,13 @@ export default function ChatBotWindown({
                 >
                     <ChatHeader onClose={onClose} onDragStart={onDragStart} />
                     <ChatMessages messages={messages} isTyping={isTyping} />
-                    {onContactAdmin && onVoiceCall && onVideoCall && (
+                    {/* {onContactAdmin && onVoiceCall && onVideoCall && (
                         <ChatActions
                             onContactAdmin={onContactAdmin}
                             onVoiceCall={onVoiceCall}
                             onVideoCall={onVideoCall}
                         />
-                    )}
+                    )} */}
                     <ChatInput
                         value={inputValue}
                         onChange={onInputChange}
