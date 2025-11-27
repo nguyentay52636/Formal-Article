@@ -6,10 +6,13 @@ import { Button } from "@/components/ui/button"
 import { Heart, Plus, Trash2 } from "lucide-react"
 import { CompactSectionWrapper } from "./SectionWrapper"
 import type { SectionProps } from "./types"
+import { getIconStrokeWidth } from "./types"
 
-type InterestsSectionProps = Pick<SectionProps, 'cvData' | 'setCVData' | 'selectedColor' | 'fontSize' | 't'>
+type InterestsSectionProps = Pick<SectionProps, 'cvData' | 'setCVData' | 'selectedColor' | 'fontSize' | 't' | 'iconStyle'>
 
-export function InterestsSection({ cvData, setCVData, selectedColor, fontSize, t }: InterestsSectionProps) {
+export function InterestsSection({ cvData, setCVData, selectedColor, fontSize, t, iconStyle }: InterestsSectionProps) {
+    const strokeWidth = getIconStrokeWidth(iconStyle)
+    
     const addInterest = useCallback(() => {
         setCVData({
             ...cvData,
@@ -31,9 +34,10 @@ export function InterestsSection({ cvData, setCVData, selectedColor, fontSize, t
     return (
         <CompactSectionWrapper
             title={t.interests}
-            icon={<Heart className="w-5 h-5" />}
+            icon={<Heart className="w-5 h-5" strokeWidth={strokeWidth} />}
             color={selectedColor}
             onAdd={addInterest}
+            iconStyle={iconStyle}
         >
             <div className="space-y-2">
                 {cvData.interests.map((interest) => (
@@ -56,7 +60,7 @@ export function InterestsSection({ cvData, setCVData, selectedColor, fontSize, t
                 ))}
                 {cvData.interests.length === 0 && (
                     <Button onClick={addInterest} variant="outline" size="sm" className="w-full bg-transparent" style={{ fontSize: `${fontSize}px` }}>
-                        <Plus className="w-4 h-4 mr-1" />
+                        <Plus className="w-4 h-4 mr-1" strokeWidth={strokeWidth} />
                         {t.placeholders.addInterest}
                     </Button>
                 )}
@@ -64,4 +68,3 @@ export function InterestsSection({ cvData, setCVData, selectedColor, fontSize, t
         </CompactSectionWrapper>
     )
 }
-

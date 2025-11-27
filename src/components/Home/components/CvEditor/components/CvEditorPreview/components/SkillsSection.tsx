@@ -6,10 +6,13 @@ import { Button } from "@/components/ui/button"
 import { Star, Plus, Trash2 } from "lucide-react"
 import { CompactSectionWrapper } from "./SectionWrapper"
 import type { SectionProps } from "./types"
+import { getIconStrokeWidth } from "./types"
 
-type SkillsSectionProps = Pick<SectionProps, 'cvData' | 'setCVData' | 'selectedColor' | 'fontSize' | 't'>
+type SkillsSectionProps = Pick<SectionProps, 'cvData' | 'setCVData' | 'selectedColor' | 'fontSize' | 't' | 'iconStyle'>
 
-export function SkillsSection({ cvData, setCVData, selectedColor, fontSize, t }: SkillsSectionProps) {
+export function SkillsSection({ cvData, setCVData, selectedColor, fontSize, t, iconStyle }: SkillsSectionProps) {
+    const strokeWidth = getIconStrokeWidth(iconStyle)
+    
     const addSkill = useCallback(() => {
         setCVData({
             ...cvData,
@@ -31,9 +34,10 @@ export function SkillsSection({ cvData, setCVData, selectedColor, fontSize, t }:
     return (
         <CompactSectionWrapper
             title={t.skills}
-            icon={<Star className="w-5 h-5" />}
+            icon={<Star className="w-5 h-5" strokeWidth={strokeWidth} />}
             color={selectedColor}
             onAdd={addSkill}
+            iconStyle={iconStyle}
         >
             <div className="space-y-2">
                 {cvData.skills.map((skill) => (
@@ -56,7 +60,7 @@ export function SkillsSection({ cvData, setCVData, selectedColor, fontSize, t }:
                 ))}
                 {cvData.skills.length === 0 && (
                     <Button onClick={addSkill} variant="outline" size="sm" className="w-full bg-transparent" style={{ fontSize: `${fontSize}px` }}>
-                        <Plus className="w-4 h-4 mr-1" />
+                        <Plus className="w-4 h-4 mr-1" strokeWidth={strokeWidth} />
                         {t.placeholders.addSkill}
                     </Button>
                 )}
@@ -64,4 +68,3 @@ export function SkillsSection({ cvData, setCVData, selectedColor, fontSize, t }:
         </CompactSectionWrapper>
     )
 }
-

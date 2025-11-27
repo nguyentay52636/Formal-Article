@@ -7,10 +7,13 @@ import { Button } from "@/components/ui/button"
 import { GraduationCap, Trash2 } from "lucide-react"
 import { SectionWrapper } from "./SectionWrapper"
 import type { SectionProps } from "./types"
+import { getIconStrokeWidth } from "./types"
 
-type EducationSectionProps = Pick<SectionProps, 'cvData' | 'setCVData' | 'selectedColor' | 'fontSize' | 't'>
+type EducationSectionProps = Pick<SectionProps, 'cvData' | 'setCVData' | 'selectedColor' | 'fontSize' | 't' | 'iconStyle'>
 
-export function EducationSection({ cvData, setCVData, selectedColor, fontSize, t }: EducationSectionProps) {
+export function EducationSection({ cvData, setCVData, selectedColor, fontSize, t, iconStyle }: EducationSectionProps) {
+    const strokeWidth = getIconStrokeWidth(iconStyle)
+    
     const addEducation = useCallback(() => {
         setCVData({
             ...cvData,
@@ -32,10 +35,11 @@ export function EducationSection({ cvData, setCVData, selectedColor, fontSize, t
     return (
         <SectionWrapper
             title={t.education}
-            icon={<GraduationCap className="w-5 h-5" />}
+            icon={<GraduationCap className="w-5 h-5" strokeWidth={strokeWidth} />}
             color={selectedColor}
             onAdd={addEducation}
             addLabel={t.buttons.add}
+            iconStyle={iconStyle}
         >
             <div className="space-y-4">
                 {cvData.education.map((edu) => (
@@ -75,4 +79,3 @@ export function EducationSection({ cvData, setCVData, selectedColor, fontSize, t
         </SectionWrapper>
     )
 }
-

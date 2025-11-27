@@ -3,6 +3,7 @@ export { makeEditable, EDITABLE_STYLES } from './constants'
 
 // Types
 export type * from './types'
+export { getIconStrokeWidth } from './types'
 
 // Components
 export { CustomTemplatePreview } from './CustomTemplatePreview'
@@ -15,4 +16,3 @@ export { SkillsSection } from './SkillsSection'
 export { InterestsSection } from './InterestsSection'
 export { ReferencesSection } from './ReferencesSection'
 export { SectionWrapper, CompactSectionWrapper } from './SectionWrapper'
-

@@ -1,4 +1,5 @@
 import type { CVData } from "../../../CvEditor"
+import type { IconStyle } from "../../../types/editor-settings"
 
 export interface SectionProps {
     cvData: CVData
@@ -16,6 +17,10 @@ export interface SectionProps {
         placeholders: Record<string, string>
         buttons: Record<string, string>
     }
+    // PRO settings
+    iconStyle?: IconStyle
+    lineHeight?: number
+    sectionSpacing?: number
 }
 
 export interface Experience {
@@ -55,3 +60,13 @@ export interface Reference {
     contact: string
 }
 
+// Helper to get icon stroke width based on style
+export const getIconStrokeWidth = (iconStyle: IconStyle = 'minimal'): number => {
+    switch (iconStyle) {
+        case 'minimal': return 1
+        case 'bold': return 2.5
+        case 'filled': return 2
+        case 'rounded': return 1.5
+        default: return 1.5
+    }
+}

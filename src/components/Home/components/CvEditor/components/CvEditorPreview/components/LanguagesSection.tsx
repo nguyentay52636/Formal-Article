@@ -6,10 +6,13 @@ import { Button } from "@/components/ui/button"
 import { Languages, Plus, Trash2 } from "lucide-react"
 import { CompactSectionWrapper } from "./SectionWrapper"
 import type { SectionProps } from "./types"
+import { getIconStrokeWidth } from "./types"
 
-type LanguagesSectionProps = Pick<SectionProps, 'cvData' | 'setCVData' | 'selectedColor' | 'fontSize' | 't'>
+type LanguagesSectionProps = Pick<SectionProps, 'cvData' | 'setCVData' | 'selectedColor' | 'fontSize' | 't' | 'iconStyle'>
 
-export function LanguagesSection({ cvData, setCVData, selectedColor, fontSize, t }: LanguagesSectionProps) {
+export function LanguagesSection({ cvData, setCVData, selectedColor, fontSize, t, iconStyle }: LanguagesSectionProps) {
+    const strokeWidth = getIconStrokeWidth(iconStyle)
+    
     const addLanguage = useCallback(() => {
         setCVData({
             ...cvData,
@@ -31,9 +34,10 @@ export function LanguagesSection({ cvData, setCVData, selectedColor, fontSize, t
     return (
         <CompactSectionWrapper
             title={t.languages}
-            icon={<Languages className="w-5 h-5" />}
+            icon={<Languages className="w-5 h-5" strokeWidth={strokeWidth} />}
             color={selectedColor}
             onAdd={addLanguage}
+            iconStyle={iconStyle}
         >
             <div className="space-y-2">
                 {cvData.languages.map((lang) => (
@@ -56,7 +60,7 @@ export function LanguagesSection({ cvData, setCVData, selectedColor, fontSize, t
                 ))}
                 {cvData.languages.length === 0 && (
                     <Button onClick={addLanguage} variant="outline" size="sm" className="w-full bg-transparent" style={{ fontSize: `${fontSize}px` }}>
-                        <Plus className="w-4 h-4 mr-1" />
+                        <Plus className="w-4 h-4 mr-1" strokeWidth={strokeWidth} />
                         {t.placeholders.addLanguage}
                     </Button>
                 )}
@@ -64,4 +68,3 @@ export function LanguagesSection({ cvData, setCVData, selectedColor, fontSize, t
         </CompactSectionWrapper>
     )
 }
-

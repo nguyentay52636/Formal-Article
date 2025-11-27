@@ -7,10 +7,13 @@ import { Button } from "@/components/ui/button"
 import { Briefcase, Trash2 } from "lucide-react"
 import { SectionWrapper } from "./SectionWrapper"
 import type { SectionProps } from "./types"
+import { getIconStrokeWidth } from "./types"
 
-type ExperienceSectionProps = Pick<SectionProps, 'cvData' | 'setCVData' | 'selectedColor' | 'fontSize' | 't'>
+type ExperienceSectionProps = Pick<SectionProps, 'cvData' | 'setCVData' | 'selectedColor' | 'fontSize' | 't' | 'iconStyle'>
 
-export function ExperienceSection({ cvData, setCVData, selectedColor, fontSize, t }: ExperienceSectionProps) {
+export function ExperienceSection({ cvData, setCVData, selectedColor, fontSize, t, iconStyle }: ExperienceSectionProps) {
+    const strokeWidth = getIconStrokeWidth(iconStyle)
+    
     const addExperience = useCallback(() => {
         setCVData({
             ...cvData,
@@ -32,10 +35,11 @@ export function ExperienceSection({ cvData, setCVData, selectedColor, fontSize, 
     return (
         <SectionWrapper
             title={t.experience}
-            icon={<Briefcase className="w-5 h-5" />}
+            icon={<Briefcase className="w-5 h-5" strokeWidth={strokeWidth} />}
             color={selectedColor}
             onAdd={addExperience}
             addLabel={t.buttons.add}
+            iconStyle={iconStyle}
         >
             <div className="space-y-4">
                 {cvData.experience.map((exp) => (
@@ -75,4 +79,3 @@ export function ExperienceSection({ cvData, setCVData, selectedColor, fontSize, 
         </SectionWrapper>
     )
 }
-

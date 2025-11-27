@@ -3,6 +3,8 @@
 import type { ReactNode } from "react"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
+import type { IconStyle } from "../../../types/editor-settings"
+import { getIconStrokeWidth } from "./types"
 
 interface SectionWrapperProps {
     title: string
@@ -11,9 +13,12 @@ interface SectionWrapperProps {
     onAdd?: () => void
     addLabel?: string
     children: ReactNode
+    iconStyle?: IconStyle
 }
 
-export function SectionWrapper({ title, icon, color, onAdd, addLabel, children }: SectionWrapperProps) {
+export function SectionWrapper({ title, icon, color, onAdd, addLabel, children, iconStyle }: SectionWrapperProps) {
+    const strokeWidth = getIconStrokeWidth(iconStyle)
+    
     return (
         <section className="border-l-4 pl-4" style={{ borderColor: color }}>
             <div className="flex items-center justify-between mb-3">
@@ -23,7 +28,7 @@ export function SectionWrapper({ title, icon, color, onAdd, addLabel, children }
                 </h2>
                 {onAdd && (
                     <Button onClick={onAdd} variant="ghost" size="sm" className="h-8 gap-1" style={{ color }}>
-                        <Plus className="w-4 h-4" />
+                        <Plus className="w-4 h-4" strokeWidth={strokeWidth} />
                         {addLabel}
                     </Button>
                 )}
@@ -39,9 +44,12 @@ interface CompactSectionWrapperProps {
     color: string
     onAdd?: () => void
     children: ReactNode
+    iconStyle?: IconStyle
 }
 
-export function CompactSectionWrapper({ title, icon, color, onAdd, children }: CompactSectionWrapperProps) {
+export function CompactSectionWrapper({ title, icon, color, onAdd, children, iconStyle }: CompactSectionWrapperProps) {
+    const strokeWidth = getIconStrokeWidth(iconStyle)
+    
     return (
         <section className="border-l-4 pl-4" style={{ borderColor: color }}>
             <div className="flex items-center justify-between mb-3">
@@ -51,7 +59,7 @@ export function CompactSectionWrapper({ title, icon, color, onAdd, children }: C
                 </h2>
                 {onAdd && (
                     <Button onClick={onAdd} variant="ghost" size="sm" className="h-6 w-6 p-0" style={{ color }}>
-                        <Plus className="w-4 h-4" />
+                        <Plus className="w-4 h-4" strokeWidth={strokeWidth} />
                     </Button>
                 )}
             </div>
@@ -59,4 +67,3 @@ export function CompactSectionWrapper({ title, icon, color, onAdd, children }: C
         </section>
     )
 }
-
