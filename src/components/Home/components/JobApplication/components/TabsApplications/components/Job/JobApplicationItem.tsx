@@ -4,16 +4,53 @@ import Link from 'next/link'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import Image from 'next/image'
-import { Eye, Download, Heart } from 'lucide-react'
+import { Eye, Download, Heart, Loader2 } from 'lucide-react'
 import { ITemplate } from '@/apis/templateApi'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { useSelector } from 'react-redux'
+import { selectAuth } from '@/redux/Slice/authSlice'
+import toast from 'react-hot-toast'
+import useFavorite from './hooks/useFavorite'
+
 interface JobApplicationItemProps {
     jobApplication: ITemplate
 }
 export default function JobApplicationItem({ jobApplication }: JobApplicationItemProps) {
-    const [isLiked, setIsLiked] = useState(false)
+    const { user } = useSelector(selectAuth)
+    const { addFavorite, removeFavorite, isFavorite, getFavoriteByTemplateId } = useFavorite()
+    const [isLoading, setIsLoading] = useState(false)
+
     const { id, name, slug, summary, previewUrl, views, downloads, tag, color } = jobApplication;
+    const isLiked = isFavorite(id)
+
+    const handleToggleFavorite = async (e: React.MouseEvent) => {
+        e.preventDefault()
+        e.stopPropagation()
+
+        if (!user?.id) {
+            toast.error("Vui lòng đăng nhập để thêm vào yêu thích")
+            return
+        }
+
+        setIsLoading(true)
+        try {
+            if (isLiked) {
+                const favorite = getFavoriteByTemplateId(id)
+                if (favorite) {
+                    await removeFavorite(favorite.id)
+                    toast.success("Đã xóa khỏi danh sách yêu thích")
+                }
+            } else {
+                await addFavorite(id)
+                toast.success("Đã thêm vào danh sách yêu thích thành công")
+            }
+        } catch (error) {
+            toast.error(isLiked ? "Xóa khỏi yêu thích thất bại" : "Thêm vào yêu thích thất bại")
+        } finally {
+            setIsLoading(false)
+        }
+    }
     return (
         <>
             <Link key={jobApplication.id} href={`/don-xin-viec/${jobApplication.id}`}>
@@ -30,15 +67,20 @@ export default function JobApplicationItem({ jobApplication }: JobApplicationIte
                                 className="object-cover group-hover:scale-105 transition-transform duration-300"
                             />
                             <Button
-                                onClick={() => setIsLiked(!isLiked)}
+                                onClick={handleToggleFavorite}
+                                disabled={isLoading}
                                 className="absolute right-3 top-3 z-10 rounded-full bg-white/80 p-2 backdrop-blur-sm shadow hover:bg-white transition"
                             >
-                                <Heart
-                                    className={cn(
-                                        "h-6 w-6 transition",
-                                        isLiked ? "fill-red-500 text-red-500" : "text-gray-600"
-                                    )}
-                                />
+                                {isLoading ? (
+                                    <Loader2 className="h-6 w-6 animate-spin text-gray-600" />
+                                ) : (
+                                    <Heart
+                                        className={cn(
+                                            "h-6 w-6 transition",
+                                            isLiked ? "fill-red-500 text-red-500" : "text-gray-600"
+                                        )}
+                                    />
+                                )}
                             </Button>
                         </div>
 

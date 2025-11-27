@@ -5,23 +5,19 @@ import { useRouter } from "next/navigation"
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
-import { FileText, Bookmark, MessageSquare, Download } from "lucide-react"
+import { Heart, Bookmark, MessageSquare, Download } from "lucide-react"
 import Link from "next/link"
 import ProfileHeader from "./components/ProfileHeader"
 import ArticlesTab from "./components/ArticlesTab"
 import SavedTab from "./components/SavedTab"
 import DownloadedTab from "./components/DownloadedTab"
 import CommentsTab from "./components/CommentsTab"
+import { useSelector } from "react-redux"
+import { selectAuth } from "@/redux/Slice/authSlice"
 
 export default function HoSo() {
     // const { user, isLoading: authLoading } = useAuth()
-    const user = {
-        id: 1,
-        ten: "Nguyễn Văn A",
-        email: "nguyenvana@example.com",
-        avatar: "/diverse-user-avatars.png",
-        vai_tro: "quan_tri",
-    }
+    const { isAuthenticated, user } = useSelector(selectAuth)
     const router = useRouter()
 
     // Mock data - replace with actual API calls
@@ -32,26 +28,6 @@ export default function HoSo() {
         reactions: 45,
     })
 
-    const [userArticles, setUserArticles] = useState([
-        {
-            id: 1,
-            tieu_de: "Đơn xin việc vị trí Marketing Manager",
-            duong_dan: "don-xin-viec-marketing-manager",
-            ngay_xuat_ban: "2024-01-15",
-            luot_xem: 1234,
-            luot_tai: 456,
-            trang_thai: "xuat_ban",
-        },
-        {
-            id: 2,
-            tieu_de: "Mẫu CV xin việc chuyên nghiệp",
-            duong_dan: "mau-cv-xin-viec-chuyen-nghiep",
-            ngay_xuat_ban: "2024-01-10",
-            luot_xem: 2345,
-            luot_tai: 789,
-            trang_thai: "xuat_ban",
-        },
-    ])
 
     const [savedDocs, setSavedDocs] = useState([
         {
@@ -133,8 +109,8 @@ export default function HoSo() {
                         <Tabs defaultValue="articles" className="space-y-6">
                             <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 lg:w-auto lg:inline-grid">
                                 <TabsTrigger value="articles" className="gap-2">
-                                    <FileText className="h-4 w-4" />
-                                    Bài viết
+                                    <Heart className="h-4 w-4" />
+                                    Yêu thích
                                 </TabsTrigger>
                                 <TabsTrigger value="saved" className="gap-2">
                                     <Bookmark className="h-4 w-4" />
@@ -150,9 +126,9 @@ export default function HoSo() {
                                 </TabsTrigger>
                             </TabsList>
 
-                            {/* Articles Tab */}
+                            {/* Favorites Tab */}
                             <TabsContent value="articles" className="space-y-4">
-                                <ArticlesTab userArticles={userArticles} />
+                                <ArticlesTab />
                             </TabsContent>
 
                             {/* Saved Documents Tab */}

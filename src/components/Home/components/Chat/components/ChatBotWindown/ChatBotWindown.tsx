@@ -3,7 +3,6 @@
 import { motion, AnimatePresence } from "framer-motion"
 import ChatHeader from "./ChatHeader"
 import ChatMessages from "./ChatMessages"
-import ChatActions from "./ChatActions"
 import ChatInput from "./ChatInput"
 export type Sender = "user" | "bot"
 

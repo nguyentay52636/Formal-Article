@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
 
-// Free models that work without data policy configuration
+// Free models prioritized by quality and speed
 const FREE_MODELS = [
-  "google/gemini-2.0-flash-exp:free",
+  "x-ai/grok-4.1-fast:free",
+  "deepseek/deepseek-chat-v3-0324:free",
+  "meta-llama/llama-3.3-70b-instruct:free",
   "meta-llama/llama-3.2-3b-instruct:free",
-  "qwen/qwen-2.5-7b-instruct:free",
   "google/gemini-flash-1.5-8b:free",
+  "qwen/qwen-2.5-7b-instruct:free",
 ];
 
 // System prompt for CV/Job application assistant
@@ -78,6 +80,20 @@ async function callOpenRouter(
   safeReferer: string,
   safeTitle: string
 ) {
+  const isGrokModel = model.includes("grok");
+  
+  const requestBody: any = {
+    model,
+    messages,
+    temperature: 0.7,
+    max_tokens: 1024,
+  };
+
+  // Enable reasoning for Grok models
+  if (isGrokModel) {
+    requestBody.reasoning = { enabled: true };
+  }
+
   const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
     headers: {
@@ -86,15 +102,17 @@ async function callOpenRouter(
       "X-Title": safeTitle || "CV Assistant",
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      model,
-      messages,
-      temperature: 0.7,
-      max_tokens: 1024,
-    }),
+    body: JSON.stringify(requestBody),
   });
 
   return response;
+}
+
+// Function to validate API key format
+function isValidApiKey(apiKey: string | undefined): boolean {
+  if (!apiKey) return false;
+  // OpenRouter API keys start with "sk-or-v1-"
+  return apiKey.startsWith("sk-or-v1-") && apiKey.length > 20;
 }
 
 export async function POST(req: Request) {
@@ -109,9 +127,14 @@ export async function POST(req: Request) {
 
     // Validate API key
     const apiKey = process.env.OPENROUTER_API_KEY;
-    if (!apiKey) {
-      console.error("[OpenRouter] Missing API key");
-      // Return helpful message when API key is missing
+    if (!apiKey || !isValidApiKey(apiKey)) {
+      console.error("[OpenRouter] Missing or invalid API key");
+      console.error("[OpenRouter] API Key format check:", {
+        exists: !!apiKey,
+        startsCorrectly: apiKey?.startsWith("sk-or-v1-"),
+        length: apiKey?.length,
+      });
+      // Return helpful message when API key is missing or invalid
       return NextResponse.json(
         buildLocalResponse(
           "Xin chào! Tôi là trợ lý CV. Hiện tại hệ thống đang bảo trì.\n\n" +
@@ -122,6 +145,8 @@ export async function POST(req: Request) {
         )
       );
     }
+    
+    console.log("[OpenRouter] API Key validated successfully");
 
     // Validate prompt
     if (!prompt || typeof prompt !== "string" || prompt.trim().length < 2) {
