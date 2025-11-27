@@ -5,6 +5,7 @@ import { useRef, useCallback, useMemo } from "react"
 import { Input } from "@/components/ui/input"
 import { Calendar, Mail, Phone, MapPin, User, Camera } from "lucide-react"
 import type { CVData } from "../../../CvEditor"
+import type { IconStyle } from "../../../types/editor-settings"
 
 interface CVHeaderProps {
     cvData: CVData
@@ -12,9 +13,10 @@ interface CVHeaderProps {
     selectedColor: string
     template: string
     t: { placeholders: Record<string, string> }
+    iconStyle?: IconStyle
 }
 
-export function CVHeader({ cvData, setCVData, selectedColor, template, t }: CVHeaderProps) {
+export function CVHeader({ cvData, setCVData, selectedColor, template, t, iconStyle = 'minimal' }: CVHeaderProps) {
     const fileInputRef = useRef<HTMLInputElement>(null)
 
     const headerStyle = useMemo(() => {
@@ -27,6 +29,17 @@ export function CVHeader({ cvData, setCVData, selectedColor, template, t }: CVHe
     }, [template, selectedColor])
 
     const textColor = useMemo(() => template === "minimal" ? "#000000" : "#FFFFFF", [template])
+
+    // Icon stroke width based on style
+    const iconStrokeWidth = useMemo(() => {
+        switch (iconStyle) {
+            case 'minimal': return 1
+            case 'bold': return 2.5
+            case 'filled': return 2
+            case 'rounded': return 1.5
+            default: return 1.5
+        }
+    }, [iconStyle])
 
     const updatePersonalInfo = useCallback((field: string, value: string) => {
         setCVData({ ...cvData, personalInfo: { ...cvData.personalInfo, [field]: value } })
@@ -43,6 +56,8 @@ export function CVHeader({ cvData, setCVData, selectedColor, template, t }: CVHe
         }
     }, [cvData, setCVData])
 
+    const iconClass = "w-4 h-4 shrink-0"
+
     return (
         <div className="p-8 relative" style={headerStyle}>
             <div className="flex gap-6 items-start">
@@ -56,7 +71,7 @@ export function CVHeader({ cvData, setCVData, selectedColor, template, t }: CVHe
                                 className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
                                 onClick={() => fileInputRef.current?.click()}
                             >
-                                <Camera className="w-8 h-8 text-white" />
+                                <Camera className="w-8 h-8 text-white" strokeWidth={iconStrokeWidth} />
                             </div>
                         </>
                     ) : (
@@ -64,7 +79,7 @@ export function CVHeader({ cvData, setCVData, selectedColor, template, t }: CVHe
                             className="w-full h-full bg-gray-300 rounded-full flex flex-col items-center justify-center hover:bg-gray-400 transition-colors"
                             onClick={() => fileInputRef.current?.click()}
                         >
-                            <Camera className="w-8 h-8 text-gray-600" />
+                            <Camera className="w-8 h-8 text-gray-600" strokeWidth={iconStrokeWidth} />
                             <span className="text-xs text-gray-600 mt-1">{t.placeholders.addPhoto}</span>
                         </div>
                     )}
@@ -88,7 +103,7 @@ export function CVHeader({ cvData, setCVData, selectedColor, template, t }: CVHe
                     />
                     <div className="grid grid-cols-2 gap-x-6 gap-y-2 mt-4 text-sm">
                         <div className="flex items-center gap-2">
-                            <Calendar className="w-4 h-4 shrink-0" style={{ color: textColor }} />
+                            <Calendar className={iconClass} style={{ color: textColor }} strokeWidth={iconStrokeWidth} />
                             <Input
                                 value={cvData.personalInfo.birthDate}
                                 onChange={(e) => updatePersonalInfo("birthDate", e.target.value)}
@@ -98,7 +113,7 @@ export function CVHeader({ cvData, setCVData, selectedColor, template, t }: CVHe
                             />
                         </div>
                         <div className="flex items-center gap-2">
-                            <User className="w-4 h-4 shrink-0" style={{ color: textColor }} />
+                            <User className={iconClass} style={{ color: textColor }} strokeWidth={iconStrokeWidth} />
                             <Input
                                 value={cvData.personalInfo.gender}
                                 onChange={(e) => updatePersonalInfo("gender", e.target.value)}
@@ -108,7 +123,7 @@ export function CVHeader({ cvData, setCVData, selectedColor, template, t }: CVHe
                             />
                         </div>
                         <div className="flex items-center gap-2">
-                            <Mail className="w-4 h-4 shrink-0" style={{ color: textColor }} />
+                            <Mail className={iconClass} style={{ color: textColor }} strokeWidth={iconStrokeWidth} />
                             <Input
                                 value={cvData.personalInfo.email}
                                 onChange={(e) => updatePersonalInfo("email", e.target.value)}
@@ -118,7 +133,7 @@ export function CVHeader({ cvData, setCVData, selectedColor, template, t }: CVHe
                             />
                         </div>
                         <div className="flex items-center gap-2">
-                            <Phone className="w-4 h-4 shrink-0" style={{ color: textColor }} />
+                            <Phone className={iconClass} style={{ color: textColor }} strokeWidth={iconStrokeWidth} />
                             <Input
                                 value={cvData.personalInfo.phone}
                                 onChange={(e) => updatePersonalInfo("phone", e.target.value)}
@@ -128,7 +143,7 @@ export function CVHeader({ cvData, setCVData, selectedColor, template, t }: CVHe
                             />
                         </div>
                         <div className="flex items-center gap-2 col-span-2">
-                            <MapPin className="w-4 h-4 shrink-0" style={{ color: textColor }} />
+                            <MapPin className={iconClass} style={{ color: textColor }} strokeWidth={iconStrokeWidth} />
                             <Input
                                 value={cvData.personalInfo.address}
                                 onChange={(e) => updatePersonalInfo("address", e.target.value)}
@@ -143,4 +158,3 @@ export function CVHeader({ cvData, setCVData, selectedColor, template, t }: CVHe
         </div>
     )
 }
-

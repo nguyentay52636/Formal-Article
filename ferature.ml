@@ -155,3 +155,20 @@ To test the implementation:
 - The `baseApi.ts` is already configured to use `http://localhost:8000/api` as the base URL
 - Template data includes HTML and CSS that can be used for CV rendering
 - The editor maintains backward compatibility with existing CV data in localStorage
+
+image.png
+ấu trúc mới:
+File	Chức năng
+constants.ts	makeEditable() + EDITABLE_STYLES
+types.ts	Shared interfaces cho các section
+SectionWrapper.tsx	Component wrapper dùng chung
+CustomTemplatePreview.tsx	Render HTML template có thể chỉnh sửa
+CVHeader.tsx	Header với avatar + thông tin cá nhân
+ObjectiveSection.tsx	Mục tiêu nghề nghiệp
+ExperienceSection.tsx	Kinh nghiệm làm việc (CRUD)
+EducationSection.tsx	Học vấn (CRUD)
+LanguagesSection.tsx	Ngoại ngữ (CRUD)
+SkillsSection.tsx	Kỹ năng (CRUD)
+InterestsSection.tsx	Sở thích (CRUD)
+ReferencesSection.tsx	Người tham chiếu (CRUD)
+index.ts	Export tất cả components

@@ -13,7 +13,6 @@ export const makeEditable = (html: string): string => {
         .replace(/<p>Thời gian/g, '<p contenteditable="true">Thời gian')
 }
 
-// CSS styles for editable template
 export const EDITABLE_STYLES = `
     .cv-template-wrapper {
         background: #ffffff;
