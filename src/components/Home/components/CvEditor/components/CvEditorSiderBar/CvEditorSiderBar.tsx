@@ -70,12 +70,7 @@ const fonts = [
     { name: "Inter", value: "Inter" },
 ]
 
-const templates = [
-    { id: "modern", name: "Hiện đại", preview: "/list-item/modern-professional-cv.jpg" },
-    { id: "classic", name: "Cổ điển", preview: "/list-item/classic-professional-cv.jpg" },
-    { id: "creative", name: "Sáng tạo", preview: "/list-item/creative-colorful-cv.jpg" },
-    { id: "minimal", name: "Tối giản", preview: "/list-item/minimal-clean-cv.jpg" },
-]
+
 
 export function CVEditorSidebar({
     selectedColor,
@@ -124,32 +119,7 @@ export function CVEditorSidebar({
     return (
         <aside className="w-80 bg-[#252525] border-r border-gray-700 overflow-y-auto">
             <div className="p-6 space-y-6">
-                {/* Template Selector */}
-                <div>
-                    <div className="flex items-center gap-2 mb-4">
-                        <Layout className="w-5 h-5 text-white" />
-                        <Label className="text-white font-semibold">Kiểu thiết kế</Label>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                        {templates.map((temp) => (
-                            <button
-                                key={temp.id}
-                                onClick={() => onTemplateChange(temp.id)}
-                                className={`aspect-[3/4] rounded-lg border-2 overflow-hidden transition-all ${template === temp.id ? "border-[#0066CC] scale-105" : "border-gray-600 hover:border-gray-400"
-                                    }`}
-                            >
-                                <img src={temp.preview || "/placeholder.svg"} alt={temp.name} className="w-full h-full object-cover" />
-                                <div
-                                    className={`text-xs py-1 text-center ${template === temp.id ? "bg-[#0066CC] text-white" : "bg-gray-700 text-gray-300"}`}
-                                >
-                                    {temp.name}
-                                </div>
-                            </button>
-                        ))}
-                    </div>
-                </div>
 
-                {/* Quick Color Selector */}
                 <div>
                     <div className="flex items-center gap-2 mb-4">
                         <Palette className="w-5 h-5 text-white" />

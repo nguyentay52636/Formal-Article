@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react"
 import { Message } from "../components/ChatBotWindown/ChatBotWindown"
 import { useSelector } from "react-redux"
 import { selectChat } from "@/redux/Slice/chatSlice"
+import { helpChatBot } from "@/apis/aiOpenApi"
 
 const WELCOME_MESSAGE: Message = {
     id: "welcome",
@@ -59,41 +60,25 @@ export const useChatBot = () => {
             }))
 
         try {
-            console.log("[ChatBot] Sending message:", {
-                prompt: trimmedInput,
-                historyCount: recentHistory.length - 1, // Exclude current message
-            })
+            console.log("[ChatBot] Sending message to AI API:", trimmedInput)
 
-            const response = await fetch("/api/openrouter", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    prompt: trimmedInput,
-                    messages: recentHistory.slice(0, -1), // Don't include current message twice
-                }),
-            })
+            // Call AI API
+            const data = await helpChatBot(trimmedInput)
 
-            console.log("[ChatBot] Response status:", response.status)
+            console.log("[ChatBot] AI Response:", data)
 
-            const data = await response.json()
-
-            // Handle error response
-            if (data.error) {
-                console.error("[ChatBot] API returned error:", data.error)
-                throw new Error(data.error)
-            }
-
-            // Extract bot response
-            const botText =
+            // Extract bot response from API
+            const botText = 
+                data?.response || 
+                data?.message || 
+                data?.content ||
                 data?.choices?.[0]?.message?.content ||
-                data?.choices?.[0]?.content ||
+                data ||
                 "Xin lỗi, tôi không thể xử lý yêu cầu này. Vui lòng thử lại."
 
             const botMessage: Message = {
                 id: `bot-${Date.now()}`,
-                text: botText,
+                text: typeof botText === 'string' ? botText : JSON.stringify(botText),
                 sender: "bot",
                 timestamp: new Date(),
             }

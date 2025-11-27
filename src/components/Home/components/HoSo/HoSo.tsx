@@ -29,20 +29,6 @@ export default function HoSo() {
     })
 
 
-    const [savedDocs, setSavedDocs] = useState([
-        {
-            id: 1,
-            tieu_de: "Đơn xin nghỉ phép",
-            duong_dan: "don-xin-nghi-phep",
-            ngay_luu: "2024-01-20",
-        },
-        {
-            id: 2,
-            tieu_de: "Đơn xin chuyển công tác",
-            duong_dan: "don-xin-chuyen-cong-tac",
-            ngay_luu: "2024-01-18",
-        },
-    ])
 
     const [downloadedDocs, setDownloadedDocs] = useState([
         {
@@ -131,9 +117,9 @@ export default function HoSo() {
                                 <ArticlesTab />
                             </TabsContent>
 
-                            {/* Saved Documents Tab */}
+                            {/* Saved Documents Tab - CV đã tạo */}
                             <TabsContent value="saved" className="space-y-4">
-                                <SavedTab savedDocs={savedDocs} />
+                                <SavedTab />
                             </TabsContent>
 
                             {/* Downloaded Documents Tab */}

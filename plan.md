@@ -1,0 +1,1 @@
+CvEditorHeader :  sử ly các api generated API 
