@@ -6,7 +6,7 @@ import { z } from "zod"
 import { useAppDispatch, useAppSelector } from "@/redux/hooks"
 import { loginThunk, selectAuth, clearError } from "@/redux/Slice/authSlice"
 import { useRouter } from "next/navigation"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import toast from "react-hot-toast"
 
 // Define login form schema
@@ -27,6 +27,7 @@ export const useLogin = () => {
     const dispatch = useAppDispatch()
     const router = useRouter()
     const { isLoading, error, isAuthenticated } = useAppSelector(selectAuth)
+    const [emailNotVerified, setEmailNotVerified] = useState(false)
 
     // Initialize form with React Hook Form
     const form = useForm<LoginFormData>({
@@ -39,6 +40,7 @@ export const useLogin = () => {
 
     // Handle form submission
     const onSubmit = async (data: LoginFormData) => {
+        setEmailNotVerified(false)
         try {
             const result = await dispatch(loginThunk(data)).unwrap()
             if (result) {
@@ -51,9 +53,22 @@ export const useLogin = () => {
                     router.push("/")
                 }, 500)
             }
-        } catch (error) {
-            // Error is handled by Redux state
-            toast.error("Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin!")
+        } catch (error: any) {
+            const errorMessage = error?.message || error || "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin!"
+            
+            // Kiểm tra nếu là lỗi email chưa xác thực
+            if (
+                typeof errorMessage === 'string' && 
+                (errorMessage.toLowerCase().includes('email chưa được xác thực') ||
+                 errorMessage.toLowerCase().includes('chưa được xác thực') ||
+                 errorMessage.toLowerCase().includes('email not verified') ||
+                 errorMessage.toLowerCase().includes('not verified'))
+            ) {
+                setEmailNotVerified(true)
+            } else {
+                setEmailNotVerified(false)
+                toast.error(errorMessage)
+            }
             console.error("Login failed:", error)
         }
     }
@@ -80,5 +95,6 @@ export const useLogin = () => {
         onSubmit: form.handleSubmit(onSubmit),
         isLoading,
         error,
+        emailNotVerified,
     }
 }

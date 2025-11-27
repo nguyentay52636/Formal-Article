@@ -8,25 +8,35 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Loader2, FileText, Eye, EyeOff } from "lucide-react"
+import { Loader2, FileText, Eye, EyeOff, Mail, CheckCircle2, Sparkles, Inbox } from "lucide-react"
+import { registerAPI } from "@/apis/authApi"
+import toast from "react-hot-toast"
 
 export default function DangKy() {
     const [fullName, setFullName] = useState("")
     const [email, setEmail] = useState("")
+    const [phone, setPhone] = useState("")
     const [password, setPassword] = useState("")
     const [confirmPassword, setConfirmPassword] = useState("")
     const [agreeTerms, setAgreeTerms] = useState(false)
     const [showPassword, setShowPassword] = useState(false)
     const [error, setError] = useState("")
     const [isLoading, setIsLoading] = useState(false)
+    const [successMessage, setSuccessMessage] = useState("")
+    const [registeredEmail, setRegisteredEmail] = useState("")
     const router = useRouter()
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setError("")
+        setSuccessMessage("")
 
         if (!fullName.trim()) {
             setError("Vui lòng nhập họ và tên")
+            return
+        }
+        if (!phone.trim()) {
+            setError("Vui lòng nhập số điện thoại")
             return
         }
         if (password.length < 6) {
@@ -44,10 +54,29 @@ export default function DangKy() {
 
         setIsLoading(true)
         try {
-            await new Promise((r) => setTimeout(r, 800))
-            router.push("/dang-nhap")
-        } catch (e) {
-            setError("Đăng ký thất bại, vui lòng thử lại")
+            const response = await registerAPI({ email, fullName, password, phone })
+            
+            if (response) {
+                setSuccessMessage(
+                    response.message || 
+                    "Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản."
+                )
+                setRegisteredEmail(response.email || email)
+                
+                // Reset form
+                setFullName("")
+                setEmail("")
+                setPhone("")
+                setPassword("")
+                setConfirmPassword("")
+                setAgreeTerms(false)
+                
+                toast.success("Đăng ký thành công! Vui lòng kiểm tra email.")
+            }
+        } catch (e: any) {
+            const errorMessage = e?.message || "Đăng ký thất bại, vui lòng thử lại"
+            setError(errorMessage)
+            toast.error(errorMessage)
         } finally {
             setIsLoading(false)
         }
@@ -81,6 +110,55 @@ export default function DangKy() {
                                     </Alert>
                                 )}
 
+                                {successMessage && (
+                                    <div className="relative overflow-hidden rounded-lg border-2 border-green-200 bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 shadow-lg">
+                                        <div className="absolute top-0 right-0 w-32 h-32 bg-green-200/20 rounded-full -mr-16 -mt-16 blur-2xl"></div>
+                                        <div className="absolute bottom-0 left-0 w-24 h-24 bg-emerald-200/20 rounded-full -ml-12 -mb-12 blur-xl"></div>
+                                        
+                                        <div className="relative p-6 space-y-4">
+                                            <div className="flex items-start gap-4">
+                                                <div className="flex-shrink-0">
+                                                    <div className="relative">
+                                                        <div className="absolute inset-0 bg-green-400 rounded-full animate-ping opacity-75"></div>
+                                                        <div className="relative h-12 w-12 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-lg">
+                                                            <CheckCircle2 className="h-6 w-6 text-white" strokeWidth={2.5} />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div className="flex-1 space-y-3">
+                                                    <div>
+                                                        <h3 className="text-lg font-semibold text-green-900 flex items-center gap-2">
+                                                            <Sparkles className="h-5 w-5 text-green-600" />
+                                                            Đăng ký thành công!
+                                                        </h3>
+                                                        <p className="text-sm text-green-800 mt-1 leading-relaxed">
+                                                            Vui lòng kiểm tra email để xác thực tài khoản.
+                                                        </p>
+                                                    </div>
+                                                    
+                                                    {registeredEmail && (
+                                                        <div className="flex items-center gap-2 p-3 bg-white/60 backdrop-blur-sm rounded-lg border border-green-200/50">
+                                                            <Mail className="h-4 w-4 text-green-600 flex-shrink-0" />
+                                                            <div className="flex-1 min-w-0">
+                                                                <p className="text-xs text-green-700 font-medium mb-0.5">Email đã đăng ký:</p>
+                                                                <p className="text-sm font-semibold text-green-900 truncate">{registeredEmail}</p>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                    
+                                                    <div className="flex items-start gap-2 p-3 bg-amber-50/80 backdrop-blur-sm rounded-lg border border-amber-200/50">
+                                                        <Inbox className="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                                                        <p className="text-xs text-amber-800 leading-relaxed">
+                                                            <span className="font-medium">Lưu ý:</span> Vui lòng kiểm tra hộp thư đến và thư mục <span className="font-semibold">Spam</span> để tìm email xác thực.
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
                                 {/* Full name */}
                                 <div className="space-y-2">
                                     <Label htmlFor="fullName" className="text-[16px] font-medium">Họ và tên</Label>
@@ -91,7 +169,7 @@ export default function DangKy() {
                                         value={fullName}
                                         onChange={(e) => setFullName(e.target.value)}
                                         required
-                                        disabled={isLoading}
+                                        disabled={isLoading || !!successMessage}
                                         className="h-12 text-[16px]"
                                     />
                                 </div>
@@ -106,7 +184,22 @@ export default function DangKy() {
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         required
-                                        disabled={isLoading}
+                                        disabled={isLoading || !!successMessage}
+                                        className="h-12 text-[16px]"
+                                    />
+                                </div>
+
+                                {/* Phone */}
+                                <div className="space-y-2">
+                                    <Label htmlFor="phone" className="text-[16px] font-medium">Số điện thoại</Label>
+                                    <Input
+                                        id="phone"
+                                        type="tel"
+                                        placeholder="0123456789"
+                                        value={phone}
+                                        onChange={(e) => setPhone(e.target.value)}
+                                        required
+                                        disabled={isLoading || !!successMessage}
                                         className="h-12 text-[16px]"
                                     />
                                 </div>
@@ -122,7 +215,7 @@ export default function DangKy() {
                                             value={password}
                                             onChange={(e) => setPassword(e.target.value)}
                                             required
-                                            disabled={isLoading}
+                                            disabled={isLoading || !!successMessage}
                                             className="h-12 text-[16px] pr-12"
                                         />
                                         <button
@@ -152,7 +245,7 @@ export default function DangKy() {
                                         value={confirmPassword}
                                         onChange={(e) => setConfirmPassword(e.target.value)}
                                         required
-                                        disabled={isLoading}
+                                        disabled={isLoading || !!successMessage}
                                         className="h-12 text-[16px]"
                                     />
                                 </div>
@@ -165,7 +258,7 @@ export default function DangKy() {
                                         className="mt-1 h-4 w-4"
                                         checked={agreeTerms}
                                         onChange={(e) => setAgreeTerms(e.target.checked)}
-                                        disabled={isLoading}
+                                        disabled={isLoading || !!successMessage}
                                     />
                                     <Label htmlFor="agree" className="text-[15px] text-gray-700">
                                         Tôi đồng ý với điều khoản sử dụng
@@ -176,12 +269,17 @@ export default function DangKy() {
                                 <Button
                                     type="submit"
                                     className="w-full h-12 text-[16px] rounded-md bg-primary cursor-pointer hover:bg-primary/90"
-                                    disabled={isLoading}
+                                    disabled={isLoading || !!successMessage}
                                 >
                                     {isLoading ? (
                                         <>
                                             <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                                             Đang đăng ký...
+                                        </>
+                                    ) : successMessage ? (
+                                        <>
+                                            <CheckCircle2 className="mr-2 h-5 w-5" />
+                                            Đã đăng ký thành công
                                         </>
                                     ) : (
                                         "Đăng ký"
