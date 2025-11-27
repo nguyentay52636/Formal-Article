@@ -70,3 +70,19 @@ export const resendOTPAPI = async ({ email }: { email: string }) => {
     }
 }
 
+export const verifyEmailAPI = async (token: string) => {
+    try {
+        const { data } = await baseApi.get(`/auth/verify-email?token=${token}`)
+        return data
+    } catch (error: unknown) {
+        if (error && typeof error === 'object' && 'response' in error) {
+            const responseError = error as { response?: { data?: { message?: string } } };
+            throw new Error(responseError.response?.data?.message || "Xác thực email thất bại");
+        }
+        if (error instanceof Error) {
+            throw new Error(error.message);
+        }
+        throw new Error("Xác thực email thất bại");
+    }
+}
+

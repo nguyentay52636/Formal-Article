@@ -7,12 +7,12 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Loader2, FileText, Eye, EyeOff } from "lucide-react"
+import { Loader2, FileText, Eye, EyeOff, AlertTriangle } from "lucide-react"
 import { useLogin } from "./hooks/useLogin"
 
 export default function DangNhap() {
     const [showPassword, setShowPassword] = useState(false)
-    const { form, onSubmit, isLoading, error } = useLogin()
+    const { form, onSubmit, isLoading, error, emailNotVerified } = useLogin()
 
     const {
         register,
@@ -40,7 +40,26 @@ export default function DangNhap() {
                         </CardHeader>
                         <CardContent>
                             <form onSubmit={onSubmit} className="space-y-6">
-                                {error && (
+                                {emailNotVerified && (
+                                    <Alert className="bg-yellow-50 border-yellow-200">
+                                        <div className="flex items-start gap-3">
+                                            <AlertTriangle className="h-5 w-5 text-yellow-600 mt-0.5" />
+                                            <div className="flex-1">
+                                                <AlertDescription className="text-yellow-800 font-medium">
+                                                    Email chưa được xác thực
+                                                </AlertDescription>
+                                                <div className="mt-2 text-sm text-yellow-700">
+                                                    <p>{error}</p>
+                                                    <p className="mt-2">
+                                                        Nếu không thấy email, vui lòng kiểm tra thư mục <strong>Spam</strong> hoặc <strong>Thư rác</strong>.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </Alert>
+                                )}
+
+                                {error && !emailNotVerified && (
                                     <Alert variant="destructive">
                                         <AlertDescription>{error}</AlertDescription>
                                     </Alert>
