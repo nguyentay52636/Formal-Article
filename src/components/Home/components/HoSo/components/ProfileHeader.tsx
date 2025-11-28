@@ -19,14 +19,10 @@ interface ProfileHeaderProps {
 }
 
 const getRoleBadgeColor = (roleName: string) => {
-    switch (roleName.toLowerCase()) {
-        case "admin":
-        case "quan_tri":
+    const normalizedRole = roleName?.toUpperCase() || ""
+    switch (normalizedRole) {
+        case "ADMIN":
             return "bg-red-500/10 text-red-500 border-red-500/20"
-        case "editor":
-        case "bien_tap":
-            return "bg-blue-500/10 text-blue-500 border-blue-500/20"
-        case "author":
         case "USER":
             return "bg-purple-500/10 text-purple-500 border-purple-500/20"
         default:
@@ -35,16 +31,10 @@ const getRoleBadgeColor = (roleName: string) => {
 }
 
 const getRoleLabel = (roleName: string) => {
-    switch (roleName.toLowerCase()) {
-        case "admin":
-        case "quan_tri":
-            return "Quản trị viên"
-        case "editor":
-  
-        case "ADMIN":
+    const normalizedRole = roleName?.toUpperCase() || ""
+    switch (normalizedRole) {
         case "ADMIN":
             return "Quản trị viên"
-        case "USER":
         case "USER":
             return "Người dùng"
         default:

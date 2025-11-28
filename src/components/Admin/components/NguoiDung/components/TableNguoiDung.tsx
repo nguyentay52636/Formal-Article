@@ -17,10 +17,10 @@ type Props = {
 export default function TableNguoiDung({ users, roleColors, roleLabels, onEdit, onDelete }: Props) {
   const getRoleKey = (user: IUser): string => {
     const roleName = user.role?.name?.toLowerCase() || '';
-    if (roleName === 'admin' || roleName === 'quản trị viên') return 'quan_tri';
-    if (roleName === 'editor' || roleName === 'biên tập viên') return 'bien_tap';
-    if (roleName === 'author' || roleName === 'tác giả') return 'tac_gia';
-    if (roleName === 'user' || roleName === 'độc giả') return 'doc_gia';
+    if (roleName === 'admin' || roleName === 'quản trị viên') return 'ADMIN';
+    if (roleName === 'editor' || roleName === 'biên tập viên') return 'EDITOR';
+    if (roleName === 'consultant' || roleName === 'tác giả') return 'CONSULTANT';
+    if (roleName === 'user' || roleName === 'người dùng') return 'USER';
     return 'other'; // Return 'other' instead of default 'doc_gia' to handle unknown roles
   }
 

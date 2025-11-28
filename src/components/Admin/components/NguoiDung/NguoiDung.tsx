@@ -15,17 +15,17 @@ import { useUser } from "./hooks/useUser"
 import { IUser } from "@/apis/types"
 
 const roleColors: Record<string, string> = {
-    quan_tri: "bg-destructive text-destructive-foreground",
-    bien_tap: "bg-primary text-primary-foreground",
-    tac_gia: "bg-secondary text-secondary-foreground",
-    doc_gia: "bg-muted text-muted-foreground",
+    ADMIN: "bg-destructive text-destructive-foreground",
+    USER: "bg-primary text-primary-foreground",
+    EDITOR: "bg-secondary text-secondary-foreground",
+    CONSULTANT: "bg-muted text-muted-foreground",
 }
 
 const roleLabels: Record<string, string> = {
-    quan_tri: "Quản trị",
-    bien_tap: "Biên tập",
-    tac_gia: "Tác giả",
-    doc_gia: "Độc giả",
+    ADMIN: "Quản trị",
+    USER: "Người dùng",
+    EDITOR: "Biên tập",
+    CONSULTANT: "Độc giả",
 }
 
 // Component to handle paginated table display
@@ -38,10 +38,10 @@ function TableContent({ filteredUsers, roleColors, roleLabels, onEdit, onDelete 
 }) {
     const paginatedUsers = usePaginateArray(filteredUsers)
 
-    console.log("🔍 TableContent render:");
-    console.log("  - Total filtered users:", filteredUsers.length);
-    console.log("  - Paginated users:", paginatedUsers.length);
-    console.log("  - Paginated users data:", paginatedUsers);
+    // console.log("🔍 TableContent render:");
+    // console.log("  - Total filtered users:", filteredUsers.length);
+    // console.log("  - Paginated users:", paginatedUsers.length);
+    // console.log("  - Paginated users data:", paginatedUsers);
 
     return (
         <>
