@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useRef, useImperativeHandle, useCallback } from "react"
 import { Card } from "@/components/ui/card"
 import type { CVData } from "../../CvEditor"
 import { cvTranslations } from "@/lib/cv-translations"
@@ -17,6 +17,7 @@ import type {
 import {
     makeEditable,
     CustomTemplatePreview,
+    CustomTemplatePreviewRef,
     CVHeader,
     ObjectiveSection,
     ExperienceSection,
@@ -42,6 +43,8 @@ interface CVEditorPreviewProps {
     colors?: ColorSettings
     spacing?: SpacingSettings
     iconStyle?: IconStyle
+    // Callback to get HTML output
+    onGetHtml?: (getHtml: () => string) => void
 }
 
 export function CVEditorPreview({
@@ -59,9 +62,12 @@ export function CVEditorPreview({
     colors,
     spacing,
     iconStyle = 'minimal',
+    onGetHtml,
 }: CVEditorPreviewProps) {
     const [mounted, setMounted] = useState(false)
     const [initialHtml, setInitialHtml] = useState('')
+    const previewRef = useRef<HTMLDivElement>(null)
+    const customTemplateRef = useRef<CustomTemplatePreviewRef | null>(null)
 
     const t = cvTranslations[language]
     const hasCustomTemplate = !!(templateData?.html?.trim())
@@ -73,6 +79,25 @@ export function CVEditorPreview({
             setInitialHtml(makeEditable(templateData.html))
         }
     }, [templateData?.html, initialHtml])
+
+    // Function to get HTML output
+    const getHtmlOutput = useCallback(() => {
+        if (hasCustomTemplate && customTemplateRef.current) {
+            // Get HTML from custom template (includes full Card wrapper)
+            return customTemplateRef.current.getEditedHtml()
+        } else if (previewRef.current) {
+            // Get HTML from default preview - get the Card element
+            return previewRef.current.outerHTML
+        }
+        return ''
+    }, [hasCustomTemplate])
+
+    // Expose getHtml function to parent
+    useEffect(() => {
+        if (onGetHtml) {
+            onGetHtml(getHtmlOutput)
+        }
+    }, [onGetHtml, getHtmlOutput])
 
     // Use colors from PRO settings or fallback to selectedColor
     const effectiveColor = colors?.primary || selectedColor
@@ -145,6 +170,7 @@ export function CVEditorPreview({
     if (hasCustomTemplate && mounted && initialHtml) {
         return (
             <CustomTemplatePreview
+                ref={customTemplateRef}
                 initialHtml={initialHtml}
                 css={templateData?.css}
                 selectedColor={effectiveColor}
@@ -210,6 +236,7 @@ export function CVEditorPreview({
     // Render default CV form
     return (
         <Card
+            ref={previewRef}
             className="bg-white shadow-2xl overflow-hidden mx-auto"
             style={{
                 width: "21cm",

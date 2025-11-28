@@ -27,7 +27,7 @@ const getRoleBadgeColor = (roleName: string) => {
         case "bien_tap":
             return "bg-blue-500/10 text-blue-500 border-blue-500/20"
         case "author":
-        case "tac_gia":
+        case "USER":
             return "bg-purple-500/10 text-purple-500 border-purple-500/20"
         default:
             return "bg-gray-500/10 text-gray-500 border-gray-500/20"
@@ -40,8 +40,7 @@ const getRoleLabel = (roleName: string) => {
         case "quan_tri":
             return "Quản trị viên"
         case "editor":
-        case "bien_tap":
-            return "Biên tập viên"
+  
         case "ADMIN":
         case "ADMIN":
             return "Quản trị viên"

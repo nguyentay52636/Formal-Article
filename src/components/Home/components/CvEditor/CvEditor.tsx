@@ -1,12 +1,13 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 
 import { useToast } from "@/hooks/use-toast"
 import { CvEditorHeader } from "./components/CvEditorHeader/CvEditorHeader"
 import { CVEditorSidebar } from "./components/CvEditorSiderBar/CvEditorSiderBar"
 import { CVEditorCanvas } from "./components/CvEditorCanvas/CvEditorCanvas"
 import { ITemplate } from "@/apis/templateApi"
+import { useGenetaredCvs } from "@/hooks/useGenetaredCvs"
 import {
     LayoutType,
     Section,
@@ -93,6 +94,10 @@ interface HistoryState {
 
 export function CvEditor({ cvId, template: templateProp }: CVEditorProps) {
     const { toast } = useToast()
+    const { createManual, updateCV, isCreating, isUpdating } = useGenetaredCvs()
+    const getHtmlRef = useRef<(() => string) | null>(null)
+    const isEditMode = !isNaN(Number(cvId)) && Number(cvId) > 0
+
     const [cvData, setCVData] = useState<CVData>({
         personalInfo: {
             fullName: "TÊN CỦA BẠN",
@@ -290,8 +295,66 @@ export function CvEditor({ cvId, template: templateProp }: CVEditorProps) {
         }
     }
 
-    const handleSave = () => {
+    const handleSave = async () => {
         try {
+            if (!templateData?.id) {
+                toast({
+                    title: "Lỗi",
+                    description: "Không tìm thấy template. Vui lòng thử lại.",
+                    variant: "destructive",
+                })
+                return
+            }
+
+            // Prepare dataJson: Dữ liệu người dùng nhập
+            const dataJson = JSON.stringify(cvData)
+
+            // Prepare styleJson: Color, font, layout user chọn
+            const styleJson = JSON.stringify({
+                font: selectedFont,
+                color: selectedColor,
+                fontSize,
+                layout,
+                sections: sections?.map(s => s.id),
+                colors,
+                spacing,
+                iconStyle,
+            })
+
+            console.log("💾 [handleSave] Saving CV:", {
+                templateId: templateData.id,
+                title: cvData.personalInfo.fullName || `CV ${templateData.name}`,
+                dataJsonLength: dataJson.length,
+                styleJsonLength: styleJson.length,
+                note: "Backend will render htmlOutput from template.html + template.css + dataJson + styleJson"
+            })
+
+            // Backend sẽ tự render htmlOutput từ:
+            // - template.html (khung HTML của template)
+            // - template.css (CSS của template)
+            // - dataJson (dữ liệu user nhập)
+            // - styleJson (style user chọn: color, font, layout)
+            // Không cần gửi htmlOutput từ frontend
+            if (isEditMode) {
+                // Update existing CV
+                await updateCV(Number(cvId), {
+                    title: cvData.personalInfo.fullName || `CV ${templateData.name}`,
+                    dataJson,
+                    styleJson,
+                    // htmlOutput sẽ được backend render tự động
+                })
+            } else {
+                // Create new CV
+                await createManual({
+                    templateId: templateData.id,
+                    title: cvData.personalInfo.fullName || `CV ${templateData.name}`,
+                    dataJson,
+                    styleJson,
+                    // htmlOutput sẽ được backend render tự động từ template + dataJson + styleJson
+                })
+            }
+
+            // Also save to localStorage as backup
             const dataToSave = {
                 cvData,
                 selectedColor,
@@ -304,15 +367,12 @@ export function CvEditor({ cvId, template: templateProp }: CVEditorProps) {
                 lastSaved: new Date().toISOString(),
             }
             localStorage.setItem(`cv-data-${cvId}`, JSON.stringify(dataToSave))
-            toast({
-                title: "Đã lưu hồ sơ",
-                description: "Hồ sơ của bạn đã được lưu thành công",
-            })
-        } catch (error) {
-            console.error("[v0] Error saving CV data:", error)
+
+        } catch (error: any) {
+            console.error("[CV Editor] Error saving CV:", error)
             toast({
                 title: "Lỗi lưu hồ sơ",
-                description: "Không thể lưu hồ sơ. Vui lòng thử lại.",
+                description: error.message || "Không thể lưu hồ sơ. Vui lòng thử lại.",
                 variant: "destructive",
             })
         }
@@ -383,6 +443,7 @@ export function CvEditor({ cvId, template: templateProp }: CVEditorProps) {
         <div className="h-screen flex flex-col">
             <CvEditorHeader
                 cvData={cvData}
+                template={templateData}
                 onSave={handleSave}
                 onExportPDF={handleExportPDF}
                 onExportWord={handleExportWord}
@@ -395,6 +456,7 @@ export function CvEditor({ cvId, template: templateProp }: CVEditorProps) {
                 onZoomChange={setZoom}
                 language={language}
                 onLanguageChange={setLanguage}
+                isSaving={isCreating || isUpdating}
             />
 
             <div className="flex-1 flex overflow-hidden">
@@ -438,6 +500,9 @@ export function CvEditor({ cvId, template: templateProp }: CVEditorProps) {
                     colors={colors}
                     spacing={spacing}
                     iconStyle={iconStyle}
+                    onGetHtml={(getHtml) => {
+                        getHtmlRef.current = getHtml
+                    }}
                 />
             </div>
         </div>

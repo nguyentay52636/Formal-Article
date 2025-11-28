@@ -6,7 +6,7 @@ export type * from './types'
 export { getIconStrokeWidth } from './types'
 
 // Components
-export { CustomTemplatePreview } from './CustomTemplatePreview'
+export { CustomTemplatePreview, type CustomTemplatePreviewRef } from './CustomTemplatePreview'
 export { CVHeader } from './CVHeader'
 export { ObjectiveSection } from './ObjectiveSection'
 export { ExperienceSection } from './ExperienceSection'

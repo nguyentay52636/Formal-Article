@@ -27,6 +27,8 @@ interface CVEditorCanvasProps {
     colors?: ColorSettings
     spacing?: SpacingSettings
     iconStyle?: IconStyle
+    // Callback to get HTML
+    onGetHtml?: (getHtml: () => string) => void
 }
 
 export function CVEditorCanvas({
@@ -45,6 +47,7 @@ export function CVEditorCanvas({
     colors,
     spacing,
     iconStyle,
+    onGetHtml,
 }: CVEditorCanvasProps) {
     return (
         <main className="flex-1 overflow-auto bg-[#2C2C2C] p-8">
@@ -67,6 +70,7 @@ export function CVEditorCanvas({
                     colors={colors}
                     spacing={spacing}
                     iconStyle={iconStyle}
+                    onGetHtml={onGetHtml}
                 />
             </div>
         </main>

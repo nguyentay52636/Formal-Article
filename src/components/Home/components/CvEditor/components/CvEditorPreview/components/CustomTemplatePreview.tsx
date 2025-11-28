@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useRef, useCallback, useMemo, useState } from "react"
+import { useRef, useCallback, useMemo, useState, forwardRef, useImperativeHandle } from "react"
 import { Card } from "@/components/ui/card"
 import { EDITABLE_STYLES } from "./constants"
 import { ImageCropper } from "../../CvEditorSiderBar/components/ImageCropper"
@@ -15,14 +15,19 @@ interface CustomTemplatePreviewProps {
     fontSize?: number
 }
 
-export function CustomTemplatePreview({
+export interface CustomTemplatePreviewRef {
+    getEditedHtml: () => string
+}
+
+export const CustomTemplatePreview = forwardRef<CustomTemplatePreviewRef, CustomTemplatePreviewProps>(({
     initialHtml,
     css,
     selectedColor,
     selectedFont,
     fontSize,
-}: CustomTemplatePreviewProps) {
+}, ref) => {
     const cvWrapperRef = useRef<HTMLDivElement>(null)
+    const cardRef = useRef<HTMLDivElement>(null)
     const templateFileInputRef = useRef<HTMLInputElement>(null)
     const [cropperOpen, setCropperOpen] = useState(false)
     const [imageToCrop, setImageToCrop] = useState<string>("")
@@ -121,14 +126,28 @@ export function CustomTemplatePreview({
         }
     }, [])
 
-    // Function to get edited HTML content
+    // Function to get edited HTML content (full Card with wrapper)
     const getEditedHtml = useCallback(() => {
+        if (cardRef.current) {
+            // Return full Card element HTML
+            return cardRef.current.outerHTML
+        }
+        // Fallback to wrapper content
         return cvWrapperRef.current?.innerHTML || ''
     }, [])
 
+    // Expose getEditedHtml via ref
+    useImperativeHandle(ref, () => ({
+        getEditedHtml
+    }), [getEditedHtml])
+
     return (
         <>
-            <Card className="bg-white shadow-2xl overflow-hidden mx-auto" style={{ width: "21cm", minHeight: "29.7cm" }}>
+            <Card
+                ref={cardRef}
+                className="bg-white shadow-2xl overflow-hidden mx-auto"
+                style={{ width: "21cm", minHeight: "29.7cm" }}
+            >
                 <input
                     ref={templateFileInputRef}
                     type="file"
@@ -157,4 +176,6 @@ export function CustomTemplatePreview({
             )}
         </>
     )
-}
+})
+
+CustomTemplatePreview.displayName = "CustomTemplatePreview"
