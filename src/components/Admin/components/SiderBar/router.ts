@@ -20,26 +20,26 @@ export const menuItems = [
         href: "/quantri/nguoi-dung",
         icon: Users,
     },
-    {
-        title: "Bình luận",
-        href: "/quantri/binh-luan",
-        icon: MessageSquare,
-    },
-    {
-        title: "Tệp tin",
-        href: "/quantri/tep-tin",
-        icon: FileUp,
-    },
+    // {
+    //     title: "Bình luận",
+    //     href: "/quantri/binh-luan",
+    //     icon: MessageSquare,
+    // },
+    // {
+    //     title: "Tệp tin",
+    //     href: "/quantri/tep-tin",
+    //     icon: FileUp,
+    // },
     {
         title: "Thẻ",
         href: "/quantri/the",
         icon: Tags,
     },
-    {
-        title: "Nội dung nổi bật",
-        href: "/quantri/noi-bat",
-        icon: Star,
-    },
+    // {
+    //     title: "Nội dung nổi bật",
+    //     href: "/quantri/noi-bat",
+    //     icon: Star,
+    // },
     {
         title: "Thống kê",
         href: "/quantri/thong-ke",

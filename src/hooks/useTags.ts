@@ -1,3 +1,4 @@
+"use client"
 import { getAllTags } from "@/apis/tagApi"
 import { ITag } from "@/apis/types"
 import { useState } from "react"

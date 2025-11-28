@@ -4,7 +4,6 @@ import { useState, useEffect, useRef } from "react"
 import { ChatButton } from "./components"
 import ChatBotWindown from "./components/ChatBotWindown/ChatBotWindown"
 import ChatAdminWindow from "./components/ChatAdminWindow/ChatAdminWindow"
-import { Message } from "./components/ChatBotWindown/ChatBotWindown"
 import { IMessage } from "@/apis/types"
 import { useChatWithAdmin } from "./hooks/useChatWithAdmin"
 import { useStyle } from "./hooks/useStyle"
@@ -92,13 +91,15 @@ export default function Chat() {
             return
         }
 
-        if (!adminRoomId) {
-            toast.loading("Chưa có phòng chat. Vui lòng tạo phòng trước!");
-            return;
-        }
-
         const userInput = inputValue.trim()
         setInputValue("")
+
+        if (!adminRoomId) {
+            // Nếu chưa có phòng, tạo phòng mới với tin nhắn đầu tiên
+            // Việc này sẽ đồng thời gửi thông báo và tạo tin nhắn
+            createRoom(userInput);
+            return;
+        }
 
         try {
             await handleSentMessage(userInput);
