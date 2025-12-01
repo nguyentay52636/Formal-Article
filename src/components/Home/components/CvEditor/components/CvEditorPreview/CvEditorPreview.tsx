@@ -75,10 +75,10 @@ export function CVEditorPreview({
     useEffect(() => { setMounted(true) }, [])
 
     useEffect(() => {
-        if (templateData?.html && !initialHtml) {
+        if (templateData?.html) {
             setInitialHtml(makeEditable(templateData.html))
         }
-    }, [templateData?.html, initialHtml])
+    }, [templateData?.html, templateData?.id])
 
     // Function to get HTML output
     const getHtmlOutput = useCallback(() => {
@@ -176,6 +176,8 @@ export function CVEditorPreview({
                 selectedColor={effectiveColor}
                 selectedFont={selectedFont}
                 fontSize={fontSize}
+                cvData={cvData}
+                setCVData={setCVData}
             />
         )
     }

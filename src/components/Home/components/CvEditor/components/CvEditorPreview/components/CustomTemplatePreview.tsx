@@ -1,10 +1,11 @@
 "use client"
 
 import type React from "react"
-import { useRef, useCallback, useMemo, useState, forwardRef, useImperativeHandle } from "react"
+import { useRef, useCallback, useMemo, useState, forwardRef, useImperativeHandle, useEffect } from "react"
 import { Card } from "@/components/ui/card"
 import { EDITABLE_STYLES } from "./constants"
 import { ImageCropper } from "../../CvEditorSiderBar/components/ImageCropper"
+import type { CVData } from "../../../CvEditor"
 
 interface CustomTemplatePreviewProps {
     initialHtml: string
@@ -13,6 +14,8 @@ interface CustomTemplatePreviewProps {
     selectedColor?: string
     selectedFont?: string
     fontSize?: number
+    cvData?: CVData
+    setCVData?: (data: any) => void
 }
 
 export interface CustomTemplatePreviewRef {
@@ -25,6 +28,8 @@ export const CustomTemplatePreview = forwardRef<CustomTemplatePreviewRef, Custom
     selectedColor,
     selectedFont,
     fontSize,
+    cvData,
+    setCVData,
 }, ref) => {
     const cvWrapperRef = useRef<HTMLDivElement>(null)
     const cardRef = useRef<HTMLDivElement>(null)
@@ -109,15 +114,28 @@ export const CustomTemplatePreview = forwardRef<CustomTemplatePreviewRef, Custom
 
     // Handle cropped image from ImageCropper
     const handleCropComplete = useCallback((croppedImage: string) => {
-        if (cvWrapperRef.current) {
-            const avatarImg = cvWrapperRef.current?.querySelector('.avatar-box img') as HTMLImageElement
-            if (avatarImg) {
-                avatarImg.src = croppedImage
+        console.log("handleCropComplete called", croppedImage.substring(0, 50) + "...")
+        if (setCVData) {
+            setCVData((prev: CVData) => {
+                console.log("Updating CVData photo")
+                return {
+                    ...prev,
+                    personalInfo: { ...prev.personalInfo, photo: croppedImage }
+                }
+            })
+        } else {
+            // Fallback for local update if no setCVData provided
+            if (cvWrapperRef.current) {
+                const avatarImg = cvWrapperRef.current?.querySelector('.avatar-box img') as HTMLImageElement
+                if (avatarImg) {
+                    avatarImg.src = croppedImage
+                }
             }
         }
         setImageToCrop("")
-    }, [])
+    }, [setCVData])
 
+    // Update avatar when cvData.personalInfo.photo changes (from sidebar)
     const handleAvatarClick = useCallback((e: React.MouseEvent) => {
         if ((e.target as HTMLElement).closest('.avatar-box')) {
             e.preventDefault()
@@ -125,6 +143,28 @@ export const CustomTemplatePreview = forwardRef<CustomTemplatePreviewRef, Custom
             templateFileInputRef.current?.click()
         }
     }, [])
+
+    // Inject user photo into HTML
+    const finalHtml = useMemo(() => {
+        console.log("Recalculating finalHtml", { photo: cvData?.personalInfo?.photo?.substring(0, 20) + "..." })
+        if (!cvData?.personalInfo?.photo) return initialHtml
+
+        try {
+            const parser = new DOMParser()
+            const doc = parser.parseFromString(initialHtml, 'text/html')
+            const img = doc.querySelector('.avatar-box img')
+            if (img) {
+                console.log("Found avatar img, updating src")
+                img.setAttribute('src', cvData.personalInfo.photo)
+                return doc.body.innerHTML
+            } else {
+                console.warn("Avatar img not found in template HTML")
+            }
+        } catch (e) {
+            console.error("Error injecting photo into HTML", e)
+        }
+        return initialHtml
+    }, [initialHtml, cvData?.personalInfo?.photo])
 
     // Function to get edited HTML content (full Card with wrapper)
     const getEditedHtml = useCallback(() => {
@@ -159,7 +199,7 @@ export const CustomTemplatePreview = forwardRef<CustomTemplatePreviewRef, Custom
                 <div
                     ref={cvWrapperRef}
                     className="cv-template-wrapper"
-                    dangerouslySetInnerHTML={{ __html: initialHtml }}
+                    dangerouslySetInnerHTML={{ __html: finalHtml }}
                     suppressContentEditableWarning
                     onClick={handleAvatarClick}
                 />

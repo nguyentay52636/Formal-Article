@@ -95,6 +95,24 @@ export default function Chat() {
         setInputValue("")
 
         if (!adminRoomId) {
+            // Optimistically add message
+            const tempMessage: IMessage = {
+                id: Date.now().toString(),
+                roomId: '',
+                senderId: user?.id || 0,
+                content: userInput,
+                senderType: "user",
+                type: "text",
+                fileUrl: "",
+                fileSize: 0,
+                fileMime: "",
+                replyToId: "",
+                status: "sent",
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+            }
+            setAdminMessages(prev => [...prev, tempMessage]);
+
             // Nếu chưa có phòng, tạo phòng mới với tin nhắn đầu tiên
             // Việc này sẽ đồng thời gửi thông báo và tạo tin nhắn
             createRoom(userInput);
@@ -164,7 +182,7 @@ export default function Chat() {
             {isOpen && (
                 <div
                     style={{
-                        position: "fixed",
+
                         left: position.x,
                         top: position.y,
                         zIndex: 9999,

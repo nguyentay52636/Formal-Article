@@ -54,7 +54,7 @@ export default function JobApplicationItem({ jobApplication }: JobApplicationIte
     return (
         <>
             <Link key={jobApplication.id} href={`/don-xin-viec/${jobApplication.id}`}>
-                <Card className="group hover:shadow-lg transition-shadow overflow-hidden h-full">
+                <Card className="group hover:shadow-lg transition-shadow overflow-hidden max-w-[200px]! max-h-[350px]">
                     <CardContent className="p-0">
                         <div className={`relative aspect-[3/4] ${color} overflow-hidden`}>
                             <Badge className="absolute top-3 left-3 z-10 bg-[#00B4D8] hover:bg-[#0096B8] text-white">
